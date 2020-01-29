@@ -1,8 +1,6 @@
 import requests
 import dateparser
 import re
-import datetime
-from pytz import timezone
 from bs4 import BeautifulSoup as bs
 
 
