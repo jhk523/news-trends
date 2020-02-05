@@ -4,10 +4,10 @@ import re
 # import click
 
 
-def scrape_news():
+def scrape_news(initialize=False, verbose=False):
     from newstrends.data.scraping.scrape_news import update_news
 
-    update_news()
+    update_news(initialize, verbose)
 
 
 # @click.group()

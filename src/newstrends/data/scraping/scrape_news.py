@@ -3,6 +3,8 @@ import dateparser
 import re
 from bs4 import BeautifulSoup as bs
 
+from newstrends.data.db import mysql
+
 URLS = {'조선일보': 'http://www.chosun.com/site/data/rss/rss.xml',
         '동아일보': 'https://rss.donga.com/total.xml',
         '노컷뉴스': 'http://rss.nocutnews.co.kr/nocutnews.xml',
@@ -36,7 +38,14 @@ def find_tag(item, tag):
     return result.strip()
 
 
-def update_news():
+def _create_news_table():
+    # TODO: Complete query
+    query = "create table if not exists news (" \
+            "title"
+    mysql.ENGINE.execute(query)
+
+
+def update_news(initialize, verbose):
     markup = get_html(URLS['조선일보'])
     soup = bs(markup, 'lxml-xml')
 
