@@ -4,7 +4,7 @@ import re
 # import click
 
 
-def scrape_news(initialize=False, verbose=False):
+def scrape_news(initialize=True, verbose=False):
     from newstrends.data.scraping.scrape_news import update_news
 
     update_news(initialize, verbose)

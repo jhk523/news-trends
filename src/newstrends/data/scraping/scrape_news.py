@@ -39,29 +39,35 @@ def find_tag(item, tag):
 
 
 def _create_news_table():
-    # TODO: Complete query
-    query = "create table if not exists news (" \
-            "title"
+    query = "create table if not exists news(" \
+            "`date` date not null, " \
+            "title VARCHAR(255), " \
+            "link VARCHAR(255), " \
+            "author VARCHAR(20), " \
+            "description TEXT)"
     mysql.ENGINE.execute(query)
 
 
 def update_news(initialize, verbose):
-    markup = get_html(URLS['조선일보'])
-    soup = bs(markup, 'lxml-xml')
+    if initialize:
+        _create_news_table()
 
-    news_item = soup.find('item')
-    news_title = find_tag(news_item, 'title')
-    news_description = find_tag(news_item, 'description')
-    news_author = find_tag(news_item, 'author')
-    news_link = find_tag(news_item, 'link')
-    news_date = find_tag(news_item, 'dc:date')
-    news_date = change_datetime(news_date)
-
-    print(news_item)
-    print()
-    print()
-    print(news_title)
-    print(news_link)
-    print(news_description)
-    print(news_date)
-    print(news_author)
+    # markup = get_html(URLS['조선일보'])
+    # soup = bs(markup, 'lxml-xml')
+    #
+    # news_item = soup.find('item')
+    # news_title = find_tag(news_item, 'title')
+    # news_description = find_tag(news_item, 'description')
+    # news_author = find_tag(news_item, 'author')
+    # news_link = find_tag(news_item, 'link')
+    # news_date = find_tag(news_item, 'dc:date')
+    # news_date = change_datetime(news_date)
+    #
+    # print(news_item)
+    # print()
+    # print()
+    # print(news_title)
+    # print(news_link)
+    # print(news_description)
+    # print(news_date)
+    # print(news_author)
