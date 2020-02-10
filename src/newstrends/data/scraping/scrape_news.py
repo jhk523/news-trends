@@ -8,34 +8,33 @@ from newstrends.data.db import mysql
 
 URLS = {'조선일보': 'http://www.chosun.com/site/data/rss/rss.xml',
         '동아일보': 'https://rss.donga.com/total.xml',
+        '중앙일보': 'https://rss.joins.com/joins_news_list.xml',
         '노컷뉴스': 'http://rss.nocutnews.co.kr/nocutnews.xml',
         '경향신문': 'http://www.khan.co.kr/rss/rssdata/total_news.xml',
-        '한겨례' : 'http://www.hani.co.kr/rss/',
-        'SBS정치' : 'https://news.sbs.co.kr/news/SectionRssFeed.do?sectionId=01&plink=RSSREADER',
-        'SBS경제' : 'https://news.sbs.co.kr/news/SectionRssFeed.do?sectionId=02&plink=RSSREADER',
-        'SBS사회' : 'https://news.sbs.co.kr/news/SectionRssFeed.do?sectionId=03&plink=RSSREADER',
-        'SBS생활/문화' : 'https://news.sbs.co.kr/news/SectionRssFeed.do?sectionId=07&plink=RSSREADER',
-        'SBS국제/글로벌' : 'https://news.sbs.co.kr/news/SectionRssFeed.do?sectionId=08&plink=RSSREADER',
-        'SBS연예/방송' : 'https://news.sbs.co.kr/news/SectionRssFeed.do?sectionId=14&plink=RSSREADER',
-        'SBS스포츠' : 'https://news.sbs.co.kr/news/SectionRssFeed.do?sectionId=09&plink=RSSREADER',
-        'JTBC정치' : 'http://fs.jtbc.joins.com/RSS/politics.xml',
-        'JTBC경제' : 'http://fs.jtbc.joins.com/RSS/economy.xml',
-        'JTBC사회' : 'http://fs.jtbc.joins.com/RSS/society.xml',
-        'JTBC국제' : 'http://fs.jtbc.joins.com/RSS/international.xml',
-        'JTBC문화' : 'http://fs.jtbc.joins.com/RSS/culture.xml',
-        'JTBC연예' : 'http://fs.jtbc.joins.com/RSS/entertainment.xml',
-        'JTBC스포츠' : 'http://fs.jtbc.joins.com/RSS/sports.xml',
-        'KBS' : 'http://world.kbs.co.kr/rss/rss_news.htm?lang=k',
-        '국민일보' : 'http://rss.kmib.co.kr/data/kmibRssAll.xml',
-        '데일리경제' : 'http://www.kdpress.co.kr/rss/allArticle.xml',
-        '매일경제' : 'https://www.mk.co.kr/rss/40300001/',
-        '머니투데이' : 'https://rss.mt.co.kr/mt_news.xml',
-        '세계일보' : 'http://www.segye.com/Articles/RSSList/segye_recent.xml',
-        '오마이뉴스' : 'http://rss.ohmynews.com/rss/ohmynews.xml',
-        '전자신문' : 'http://rss.etnews.com/Section901.xml',
-        '파이낸셜뉴스': 'http://www.fnnews.com/rss/new/fn_realnews_all.xml',
-        '한국경제' : 'http://rss.hankyung.com/new/news_main.xml'
-       }
+        '한겨례': 'http://www.hani.co.kr/rss/',
+        '국민일보': 'http://rss.kmib.co.kr/data/kmibRssAll.xml',
+        '데일리경제': 'http://www.kdpress.co.kr/rss/allArticle.xml',
+        '매일경제': 'https://www.mk.co.kr/rss/40300001/',
+        '머니투데이': 'https://rss.mt.co.kr/mt_news.xml',
+        '세계일보': 'http://www.segye.com/Articles/RSSList/segye_recent.xml',
+        '오마이뉴스': 'http://rss.ohmynews.com/rss/ohmynews.xml',
+        '전자신문': 'http://rss.etnews.com/Section901.xml',
+        '한국경제': 'http://rss.hankyung.com/new/news_main.xml',
+        'SBS정치': 'https://news.sbs.co.kr/news/SectionRssFeed.do?sectionId=01&plink=RSSREADER',
+        'SBS경제': 'https://news.sbs.co.kr/news/SectionRssFeed.do?sectionId=02&plink=RSSREADER',
+        'SBS사회': 'https://news.sbs.co.kr/news/SectionRssFeed.do?sectionId=03&plink=RSSREADER',
+        'SBS생활/문화': 'https://news.sbs.co.kr/news/SectionRssFeed.do?sectionId=07&plink=RSSREADER',
+        'SBS국제/글로벌': 'https://news.sbs.co.kr/news/SectionRssFeed.do?sectionId=08&plink=RSSREADER',
+        'SBS연예/방송': 'https://news.sbs.co.kr/news/SectionRssFeed.do?sectionId=14&plink=RSSREADER',
+        'SBS스포츠': 'https://news.sbs.co.kr/news/SectionRssFeed.do?sectionId=09&plink=RSSREADER',
+        'JTBC정치': 'http://fs.jtbc.joins.com/RSS/politics.xml',
+        'JTBC경제': 'http://fs.jtbc.joins.com/RSS/economy.xml',
+        'JTBC사회': 'http://fs.jtbc.joins.com/RSS/society.xml',
+        'JTBC국제': 'http://fs.jtbc.joins.com/RSS/international.xml',
+        'JTBC문화': 'http://fs.jtbc.joins.com/RSS/culture.xml',
+        'JTBC연예': 'http://fs.jtbc.joins.com/RSS/entertainment.xml',
+        'JTBC스포츠': 'http://fs.jtbc.joins.com/RSS/sports.xml'
+        }
 
 
 def get_html(url):
@@ -105,7 +104,14 @@ def _create_news_dataframe(init=False, df=None, items=None, pub=None):
         return df
 
 
-def update_news(initialize, verbose):
+def update_news(initialize, verbose, test):
+    if test:
+        markup = get_html(URLS['JTBC정치'])
+        soup = bs(markup, 'lxml-xml')
+        news_item = soup.find_all('item')
+        print(markup)
+        print(soup)
+        return
     if initialize:
         _create_news_table()
 
