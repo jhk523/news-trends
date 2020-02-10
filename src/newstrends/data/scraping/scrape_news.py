@@ -27,21 +27,28 @@ def change_datetime(date_info):
 
 
 def find_tag(item, tag):
-    try:
-        result = item.find(tag).text
-    except AttributeError:
-        return None
+    if tag is 'date':
+        try:
+            result = item.find('dc:date').text
+        except AttributeError:
+            result = item.find('pubDate').text
 
-    if 'date' in tag:
         return change_datetime(result)
-    elif tag is 'description':
-        result = re.sub('<table.*?>.*?</table>', "", result, 0, re.I | re.S)
-    return result.strip()
+    else:
+        try:
+            result = item.find(tag).text
+        except AttributeError:
+            return None
+
+        if tag is 'description':
+            result = re.sub('<table.*?>.*?</table>', "", result, 0, re.I | re.S)
+        return result.strip()
 
 
 def _create_news_table():
     query = "create table if not exists news(" \
             "`date` DATETIME not null, " \
+            "publisher VARCHAR(255), " \
             "title VARCHAR(255), " \
             "author VARCHAR(255), " \
             "link VARCHAR(255), " \
@@ -49,24 +56,27 @@ def _create_news_table():
     mysql.ENGINE.execute(query)
 
 
-def _create_news_dataframe(init=False, df=None, item=None):
+def _create_news_dataframe(init=False, df=None, items=None, pub=None):
     if init:
         columns = ['date', 'title', 'author', 'link', 'description']
         return pd.DataFrame(columns=columns)
     else:
-        news_date = find_tag(item, 'dc:date')
-        news_title = find_tag(item, 'title')
-        news_author = find_tag(item, 'author')
-        news_link = find_tag(item, 'link')
-        news_description = find_tag(item, 'description')
+        for item in items:
+            news_date = find_tag(item, 'date')
+            news_title = find_tag(item, 'title')
+            news_author = find_tag(item, 'author')
+            news_link = find_tag(item, 'link')
+            news_description = find_tag(item, 'description')
 
-        temp_df = pd.DataFrame({"date": [news_date],
-                                "title": [news_title],
-                                "author": [news_author],
-                                "link": [news_link],
-                                "description": [news_description]})
+            temp_df = pd.DataFrame({"date": [news_date],
+                                    "publisher": [pub],
+                                    "title": [news_title],
+                                    "author": [news_author],
+                                    "link": [news_link],
+                                    "description": [news_description]})
 
-        return df.append(temp_df, ignore_index=True)
+            df = df.append(temp_df, ignore_index=True)
+        return df
 
 
 def update_news(initialize, verbose):
@@ -75,10 +85,14 @@ def update_news(initialize, verbose):
 
     news_df = _create_news_dataframe(init=True)
 
-    markup = get_html(URLS['조선일보'])
-    soup = bs(markup, 'lxml-xml')
+    for publisher in URLS.keys():
+        if verbose:
+            print(publisher)
+        markup = get_html(URLS[publisher])
+        soup = bs(markup, 'lxml-xml')
 
-    news_item = soup.find('item')
+        news_item = soup.find_all('item')
 
-    news_df = _create_news_dataframe(df=news_df, item=news_item)
-    news_df.to_sql('news', mysql.ENGINE, if_exists='append', index=False)
+        news_df = _create_news_dataframe(df=news_df, items=news_item,
+                                         pub=publisher)
+        news_df.to_sql('news', mysql.ENGINE, if_exists='append', index=False)
