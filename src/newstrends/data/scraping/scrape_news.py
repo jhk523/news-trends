@@ -83,16 +83,14 @@ def update_news(initialize, verbose):
     if initialize:
         _create_news_table()
 
-    news_df = _create_news_dataframe(init=True)
-
     for publisher in URLS.keys():
         if verbose:
             print(publisher)
         markup = get_html(URLS[publisher])
+
+        news_df = _create_news_dataframe(init=True)
         soup = bs(markup, 'lxml-xml')
-
         news_item = soup.find_all('item')
-
         news_df = _create_news_dataframe(df=news_df, items=news_item,
                                          pub=publisher)
         news_df.to_sql('news', mysql.ENGINE, if_exists='append', index=False)

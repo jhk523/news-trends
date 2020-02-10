@@ -12,7 +12,7 @@ def scrape_news(initialize=False, verbose=False):
 
 @click.group()
 def main():
-    scrape_news()
+    pass
 
 
 main.add_command(scrape_news)
