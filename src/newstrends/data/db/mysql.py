@@ -13,7 +13,7 @@ _ADDRESS = DB_INFO['ADDRESS']
 _PORT = DB_INFO['PORT']
 _DB = DB_INFO['DB']
 
-_URL = 'mysql+pymysql://{0}:{1}@{2}:{3}/{4}?charset=utf8'.format(
+_URL = 'mysql+pymysql://{0}:{1}@{2}:{3}/{4}?charset=utf8mb4'.format(
     _USER, _PASSWORD, _ADDRESS, _PORT, _DB)
 ENGINE = create_engine(_URL, echo=False, encoding='utf-8', pool_recycle=3600)
 

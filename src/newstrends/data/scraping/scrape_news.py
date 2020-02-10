@@ -1,6 +1,7 @@
 import requests
 import dateparser
 import re
+import pandas as pd
 from bs4 import BeautifulSoup as bs
 
 from newstrends.data.db import mysql
@@ -22,7 +23,7 @@ def get_html(url):
 
 def change_datetime(date_info):
     result = dateparser.parse(date_info)
-    return result.strftime('%Y-%m-%d %H:%M')
+    return result.strftime('%Y-%m-%d %H:%M:%S')
 
 
 def find_tag(item, tag):
@@ -31,7 +32,7 @@ def find_tag(item, tag):
     except AttributeError:
         return None
 
-    if tag is 'dc:date':
+    if 'date' in tag:
         return change_datetime(result)
     elif tag is 'description':
         result = re.sub('<table.*?>.*?</table>', "", result, 0, re.I | re.S)
@@ -40,34 +41,44 @@ def find_tag(item, tag):
 
 def _create_news_table():
     query = "create table if not exists news(" \
-            "`date` date not null, " \
+            "`date` DATETIME not null, " \
             "title VARCHAR(255), " \
+            "author VARCHAR(255), " \
             "link VARCHAR(255), " \
-            "author VARCHAR(20), " \
             "description TEXT)"
     mysql.ENGINE.execute(query)
+
+
+def _create_news_dataframe(init=False, df=None, item=None):
+    if init:
+        columns = ['date', 'title', 'author', 'link', 'description']
+        return pd.DataFrame(columns=columns)
+    else:
+        news_date = find_tag(item, 'dc:date')
+        news_title = find_tag(item, 'title')
+        news_author = find_tag(item, 'author')
+        news_link = find_tag(item, 'link')
+        news_description = find_tag(item, 'description')
+
+        temp_df = pd.DataFrame({"date": [news_date],
+                                "title": [news_title],
+                                "author": [news_author],
+                                "link": [news_link],
+                                "description": [news_description]})
+
+        return df.append(temp_df, ignore_index=True)
 
 
 def update_news(initialize, verbose):
     if initialize:
         _create_news_table()
 
-    # markup = get_html(URLS['조선일보'])
-    # soup = bs(markup, 'lxml-xml')
-    #
-    # news_item = soup.find('item')
-    # news_title = find_tag(news_item, 'title')
-    # news_description = find_tag(news_item, 'description')
-    # news_author = find_tag(news_item, 'author')
-    # news_link = find_tag(news_item, 'link')
-    # news_date = find_tag(news_item, 'dc:date')
-    # news_date = change_datetime(news_date)
-    #
-    # print(news_item)
-    # print()
-    # print()
-    # print(news_title)
-    # print(news_link)
-    # print(news_description)
-    # print(news_date)
-    # print(news_author)
+    news_df = _create_news_dataframe(init=True)
+
+    markup = get_html(URLS['조선일보'])
+    soup = bs(markup, 'lxml-xml')
+
+    news_item = soup.find('item')
+
+    news_df = _create_news_dataframe(df=news_df, item=news_item)
+    news_df.to_sql('news', mysql.ENGINE, if_exists='append', index=False)
