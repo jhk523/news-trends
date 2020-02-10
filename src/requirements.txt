@@ -2,3 +2,4 @@ beautifulsoup4
 feedparser
 lxml
 dateparser
+pymysql
