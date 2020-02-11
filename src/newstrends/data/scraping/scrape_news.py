@@ -124,5 +124,5 @@ def update_news(initialize, verbose, test):
         if not initialize:
             news_df = _remove_duplicates(news_df, publisher)
 
-        news_df.drop_duplicates(inplace=True)
+        news_df.drop_duplicates(inplace=True, subset=['link'])
         news_df.to_sql('news', mysql.ENGINE, if_exists='append', index=False)
