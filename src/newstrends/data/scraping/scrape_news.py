@@ -97,7 +97,8 @@ def _remove_duplicates(df, publisher):
     db_links = mysql.read_publisher_links(publisher)
     merge_df = pd.merge(df, db_links, how='left', on=['link'])
     merge_df = merge_df[merge_df['dup'] != 1]
-    return merge_df.drop(columns=['dup'])
+    merge_df = merge_df.drop(columns=['dup'])
+    return merge_df.drop_duplicates()
 
 
 def update_news(initialize, verbose, test):
