@@ -1,4 +1,7 @@
 import click
+import time
+
+TIMEOUT = 60.0
 
 
 @click.command()
@@ -8,7 +11,13 @@ import click
 def scrape_news(initialize=False, verbose=False, test=False):
     from newstrends.data.scraping.scrape_news import update_news
 
-    update_news(initialize, verbose, test)
+    while True:
+        update_news(initialize, verbose, test)
+
+        if initialize:
+            break
+
+        time.sleep(TIMEOUT)
 
 
 @click.group()
