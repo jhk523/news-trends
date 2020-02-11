@@ -3,3 +3,4 @@ feedparser
 lxml
 dateparser
 pymysql
+click
