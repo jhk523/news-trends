@@ -1,6 +1,7 @@
 import requests
 import dateparser
 import re
+import datetime
 import pandas as pd
 from bs4 import BeautifulSoup as bs
 
@@ -61,7 +62,11 @@ def find_tag(item, tag):
         try:
             result = item.find('dc:date').text
         except AttributeError:
-            result = item.find('pubDate').text
+            try:
+                result = item.find('pubDate').text
+            except AttributeError:
+                time = datetime.datetime.now()
+                return time.strftime('%Y-%m-%d %H:%M:%S')
 
         return change_datetime(result)
     else:
