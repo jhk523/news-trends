@@ -35,11 +35,16 @@ URLS = {'조선일보': ['http://www.chosun.com/site/data/rss/rss.xml'],
                  'http://fs.jtbc.joins.com/RSS/entertainment.xml',
                  'http://fs.jtbc.joins.com/RSS/sports.xml']
         }
+HEADERS = {
+    'X-Requested-With': 'XMLHttpRequest',
+    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 '
+                  '(KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36',
+}
 
 
 def get_html(url):
     _html = ""
-    resp = requests.get(url)
+    resp = requests.get(url, headers=HEADERS)
     resp.encoding = 'UTF-8'
     if resp.status_code == 200:
         _html = resp.text
