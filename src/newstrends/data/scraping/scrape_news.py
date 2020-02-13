@@ -66,9 +66,26 @@ HEADERS = {
 }
 
 
-def get_html(url):
+def print_status(*args):
+    """
+    Print a message with the current time.
+
+    :param args: the list of arguments; a format string and elements.
+    :return None
+    """
+    import datetime
+    time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    message = args[0].format(*args[1:])
+    print('[{}] {}'.format(time, message))
+
+
+def get_html(publisher, url):
     _html = ""
-    resp = requests.get(url, headers=HEADERS)
+    try:
+        resp = requests.get(url, headers=HEADERS)
+    except requests.ConnectionError:
+        print_status(publisher, 'Connection error!')
+        return False
     resp.encoding = 'UTF-8'
     if resp.status_code == 200:
         _html = resp.text
@@ -135,7 +152,7 @@ def _remove_duplicates(df, publisher):
 
 def update_news(initialize, verbose, test):
     if test:
-        markup = get_html(URLS['JTBC정치'])
+        markup = get_html('JTBC', URLS['JTBC정치'])
         soup = bs(markup, 'lxml-xml')
         news_item = soup.find_all('item')
         print(markup)
@@ -151,7 +168,9 @@ def update_news(initialize, verbose, test):
         news_df = _create_news_dataframe(init=True)
 
         for sub_section in URLS[publisher]:
-            markup = get_html(sub_section)
+            markup = get_html(publisher, sub_section)
+            if not markup:
+                continue
 
             soup = bs(markup, 'lxml-xml')
             news_item = soup.find_all('item')
