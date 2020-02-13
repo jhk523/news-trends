@@ -1,7 +1,7 @@
 import click
 import time
 
-TIMEOUT = 300.0
+TIMEOUT = 60.0
 
 
 @click.command()
