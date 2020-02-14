@@ -84,7 +84,10 @@ def get_html(publisher, url):
     try:
         resp = requests.get(url, headers=HEADERS)
     except requests.ConnectionError:
-        print_status(publisher, 'Connection error!')
+        print_status(publisher, 'Connection Error!')
+        return False
+    except requests.exceptions.ChunkedEncodingError:
+        print_status(publisher, 'Chunked Encoding Error!')
         return False
     resp.encoding = 'UTF-8'
     if resp.status_code == 200:
