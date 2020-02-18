@@ -9,3 +9,5 @@ pandas
 sqlalchemy
 konlpy
 soynlp
+gensim
+numpy
