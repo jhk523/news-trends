@@ -1,21 +1,28 @@
-import os
 import json
+import os
+
 import pandas as pd
 from sqlalchemy import create_engine
 
-ROOT_DIR = os.path.abspath(__file__ + "/../../../../")
-DB_INFO_PATH = os.path.join(ROOT_DIR, 'db_info.json')
-DB_INFO = json.loads(open(DB_INFO_PATH).read())
+ROOT_DIR = os.path.abspath(__file__ + "/../../../../../")
+ENGINE = None
 
-_USER = DB_INFO['USER']
-_PASSWORD = DB_INFO['PASSWORD']
-_ADDRESS = DB_INFO['ADDRESS']
-_PORT = DB_INFO['PORT']
-_DB = DB_INFO['DB']
 
-_URL = 'mysql+pymysql://{0}:{1}@{2}:{3}/{4}?charset=utf8mb4'.format(
-    _USER, _PASSWORD, _ADDRESS, _PORT, _DB)
-ENGINE = create_engine(_URL, echo=False, encoding='utf-8', pool_recycle=3600)
+def get_engine():
+    global ENGINE
+    if ENGINE in None:
+        db_info_path = os.path.join(ROOT_DIR, 'data/db_info.json')
+        db_info = json.loads(open(db_info_path).read())
+
+        user = db_info['USER']
+        password = db_info['PASSWORD']
+        address = db_info['ADDRESS']
+        port = db_info['PORT']
+        db = db_info['DB']
+
+        _URL = f'mysql+pymysql://{user}:{password}@{address}:{port}/{db}?charset=utf8mb4'
+        ENGINE = create_engine(_URL, echo=False, encoding='utf-8', pool_recycle=3600)
+    return ENGINE
 
 
 def create_news_table():

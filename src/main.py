@@ -1,5 +1,6 @@
-import click
 import time
+
+import click
 
 TIMEOUT = 60.0
 
@@ -9,7 +10,7 @@ TIMEOUT = 60.0
 @click.option('--verbose', type=bool, default=False, is_flag=True)
 @click.option('--test', type=bool, default=False, is_flag=True)
 def scrape_news(initialize=False, verbose=False, test=False):
-    from newstrends.data.scraping.scrape_news import update_news
+    from newstrends.data.scrape import update_news
 
     while True:
         update_news(initialize, verbose, test)

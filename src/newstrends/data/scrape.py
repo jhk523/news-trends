@@ -1,11 +1,12 @@
-import requests
-import dateparser
-import re
 import datetime
-import pandas as pd
-from bs4 import BeautifulSoup as bs
+import re
 
-from newstrends.data.db import mysql
+import dateparser
+import pandas as pd
+import requests
+from bs4 import BeautifulSoup
+
+from . import mysql
 
 URLS = {'조선일보': ['http://www.chosun.com/site/data/rss/rss.xml'],
         '동아일보': ['https://rss.donga.com/total.xml'],
@@ -156,7 +157,7 @@ def _remove_duplicates(df, publisher):
 def update_news(initialize, verbose, test):
     if test:
         markup = get_html('JTBC', URLS['JTBC정치'])
-        soup = bs(markup, 'lxml-xml')
+        soup = BeautifulSoup(markup, 'lxml-xml')
         news_item = soup.find_all('item')
         print(markup)
         print(soup)
@@ -175,7 +176,7 @@ def update_news(initialize, verbose, test):
             if not markup:
                 continue
 
-            soup = bs(markup, 'lxml-xml')
+            soup = BeautifulSoup(markup, 'lxml-xml')
             news_item = soup.find_all('item')
             news_df = _create_news_dataframe(df=news_df, items=news_item,
                                              pub=publisher)
