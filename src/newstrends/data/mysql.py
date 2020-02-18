@@ -39,6 +39,8 @@ def create_news_table():
 def select_news_articles(field=None):
     if field is None:
         field = '*'
+    elif isinstance(field, list):
+        field = ', '.join(field)
     return get_engine().execute(f"select {field} from news")
 
 
