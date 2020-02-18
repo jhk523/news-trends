@@ -36,8 +36,10 @@ def create_news_table():
     get_engine().execute(query)
 
 
-def select_news_articles():
-    return get_engine().execute("select * from news")
+def select_news_articles(field=None):
+    if field is None:
+        field = '*'
+    return get_engine().execute(f"select {field} from news")
 
 
 def read_publisher_links(publisher):
