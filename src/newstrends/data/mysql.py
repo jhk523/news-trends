@@ -4,13 +4,13 @@ import os
 import pandas as pd
 from sqlalchemy import create_engine
 
-_ROOT_DIR = os.path.abspath(__file__ + "/../../../../../")
+_ROOT_DIR = os.path.abspath(__file__ + "/../../../../")
 _ENGINE = None
 
 
 def get_engine():
     global _ENGINE
-    if _ENGINE in None:
+    if _ENGINE is None:
         db_info_path = os.path.join(_ROOT_DIR, 'data/db_info.json')
         db_info = json.loads(open(db_info_path).read())
 
@@ -34,6 +34,10 @@ def create_news_table():
             "link VARCHAR(255) UNIQUE, " \
             "description TEXT)"
     get_engine().execute(query)
+
+
+def select_news_articles():
+    return get_engine().execute("select * from news")
 
 
 def read_publisher_links(publisher):
