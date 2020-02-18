@@ -13,6 +13,17 @@ from soynlp.tokenizer import MaxScoreTokenizer
 from newstrends.data import mysql
 
 
+def preprocess(articles):
+    new_articles = []
+    bad_words = ['\'', '‘', '’', '"', '“', '”', '&quot', '…', '&#039', ';', ',', '·', '...', '[', ']', '\\u200b', '?']
+    for article in articles:
+        new_article = article
+        for w in bad_words:
+            new_article = new_article.replace(w, ' ')
+        new_articles.append(new_article)
+    return new_articles
+
+
 def get_tag_model(name):
     if name == 'kkma':
         model = tag.Kkma()
@@ -27,25 +38,13 @@ def get_tag_model(name):
     return model
 
 
-def parse_by_konlpy(articles):
-    models = [get_tag_model(name) for name in ('kkma', 'hannanum', 'komoran', 'okt')]
+def parse_by_konlpy(articles, package='hannanum'):
+    articles = preprocess(articles)
+    model = get_tag_model(package)
+    words_list = []
     for title in articles:
-        print(title)
-        for i, model in enumerate(models):
-            words = model.nouns(title)
-            print(f'{i + 1}. {words}')
-        print()
-
-
-def preprocess(articles):
-    new_articles = []
-    bad_words = ['\'', '‘', '’', '"', '“', '”', '&quot', '…', '&#039', ';', ',', '·', '...', '[', ']', '\\u200b', '?']
-    for article in articles:
-        new_article = article
-        for w in bad_words:
-            new_article = new_article.replace(w, ' ')
-        new_articles.append(new_article)
-    return new_articles
+        words_list.append(model.nouns(title))
+    return words_list
 
 
 def extract_nouns_by_soynlp(articles):
@@ -71,9 +70,10 @@ def main():
     titles = [e[0] for e in entries]
     contents = [e[1] for e in entries]
 
-    words_list = parse_by_soynlp(titles)
+    words_list = parse_by_konlpy(titles + contents)
+    # words_list = parse_by_soynlp(titles)
     words_all = list(set([w for words in words_list for w in words]))
-    word_dict = gensim.models.word2vec.Word2Vec(words_list, size=2)
+    word_dict = gensim.models.word2vec.Word2Vec(words_list, size=8, window=4)
 
     words, vectors = [], []
     for w in words_all:
