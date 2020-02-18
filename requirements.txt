@@ -11,3 +11,4 @@ konlpy
 soynlp
 gensim
 numpy
+sentencepiece

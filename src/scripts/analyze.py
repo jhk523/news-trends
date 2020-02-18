@@ -10,18 +10,8 @@ from konlpy import tag
 from soynlp.noun import LRNounExtractor_v2
 from soynlp.tokenizer import MaxScoreTokenizer
 
+from newstrends import utils
 from newstrends.data import mysql
-
-
-def preprocess(articles):
-    new_articles = []
-    bad_words = ['\'', '‘', '’', '"', '“', '”', '&quot', '…', '&#039', ';', ',', '·', '...', '[', ']', '\\u200b', '?']
-    for article in articles:
-        new_article = article
-        for w in bad_words:
-            new_article = new_article.replace(w, ' ')
-        new_articles.append(new_article)
-    return new_articles
 
 
 def get_tag_model(name):
@@ -39,7 +29,7 @@ def get_tag_model(name):
 
 
 def parse_by_konlpy(articles, package='hannanum'):
-    articles = preprocess(articles)
+    articles = utils.preprocess(articles)
     model = get_tag_model(package)
     words_list = []
     for title in articles:
@@ -48,7 +38,7 @@ def parse_by_konlpy(articles, package='hannanum'):
 
 
 def extract_nouns_by_soynlp(articles):
-    articles = preprocess(articles)
+    articles = utils.preprocess(articles)
     noun_extractor = LRNounExtractor_v2(verbose=True)
     nouns = noun_extractor.train_extract(articles)
     for noun in nouns.keys():
@@ -56,7 +46,7 @@ def extract_nouns_by_soynlp(articles):
 
 
 def parse_by_soynlp(articles):
-    articles = preprocess(articles)
+    articles = utils.preprocess(articles)
     tokenizer = MaxScoreTokenizer()
     words_list = []
     for article in articles:
