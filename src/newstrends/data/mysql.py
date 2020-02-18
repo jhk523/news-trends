@@ -36,24 +36,21 @@ def create_news_table():
     get_engine().execute(query)
 
 
-def select_all_articles():
+def select_all_titles():
     sql = 'select title from news'
-    # sql = 'select title, description from news'
     entries = get_engine().execute(sql)
-    articles = []
-    for entry in entries:
-        articles.append(entry[0])
-        # articles.append(entry[1])
-    return articles
+    return [e[0] for e in entries]
 
 
 def select_articles(field=None, publishers=None):
     if field is None:
-        field = '*'
+        field_str = '*'
     elif isinstance(field, list):
-        field = ', '.join(field)
+        field_str = ', '.join(field)
+    else:
+        field_str = field
 
-    sql = f'select {field} from news'
+    sql = f'select {field_str} from news'
     if publishers is not None:
         pub_str = ', '.join(f'\'{e}\'' for e in publishers)
         sql += f' where publisher in ({pub_str})'
