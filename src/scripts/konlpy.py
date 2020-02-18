@@ -56,7 +56,7 @@ def parse_by_soynlp(articles):
 
 
 def main():
-    entries = mysql.select_news_articles(field=['title', 'description'])
+    entries = mysql.select_articles(field=['title', 'description'])
     titles = [e[0] for e in entries]
     contents = [e[1] for e in entries]
 

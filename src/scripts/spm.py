@@ -7,16 +7,10 @@ from newstrends import utils
 from newstrends.data import mysql
 
 
-def read_titles(path):
-    with open(path) as f:
-        return f.readlines()
-
-
-def write_titles(path):
-    titles = [e[0] for e in mysql.select_news_articles(field='title')]
-    titles = utils.preprocess(titles)
-    titles = np.array(titles, dtype=str)
-    np.savetxt(path, titles, fmt='%s')
+def write_articles(articles, path):
+    articles = utils.preprocess(articles)
+    articles = np.array(articles, dtype=str)
+    np.savetxt(path, articles, fmt='%s')
 
 
 def train_spm(title_path, model_path):
@@ -31,24 +25,25 @@ def train_spm(title_path, model_path):
 
 
 def main():
-    title_path = '../out/spm/titles.txt'
-    os.makedirs(os.path.dirname(title_path), exist_ok=True)
-    write_titles(title_path)
+    articles = mysql.select_all_articles()
+    titles = mysql.select_articles(
+        field='title', publishers=['조선일보', '한겨례'])
+    titles = utils.preprocess(titles)
+
+    article_path = '../out/spm/articles.txt'
+    os.makedirs(os.path.dirname(article_path), exist_ok=True)
+    write_articles(articles, article_path)
 
     model_path = '../out/spm/test.model'
     if not os.path.exists(model_path):
-        train_spm(title_path, model_path)
+        train_spm(article_path, model_path)
     model = spm.SentencePieceProcessor()
     model.Load(model_path)
 
-    piece_list = []
-    titles = read_titles(title_path)
-    for title in titles:
-        piece_list.append(model.EncodeAsPieces(title))
-
     piece_path = '../out/spm/pieces.tsv'
     with open(piece_path, 'w') as f:
-        for pieces in piece_list:
+        for title in titles:
+            pieces = model.EncodeAsPieces(title)
             f.write('\t'.join(pieces) + '\n')
 
 
