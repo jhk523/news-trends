@@ -1,3 +1,4 @@
+import os
 import typing
 
 import numpy as np
@@ -5,7 +6,8 @@ import torch
 from torch import nn, optim
 from torch.utils.data import DataLoader, TensorDataset
 
-from newstrends.spm import load_spm
+from newstrends import utils
+from newstrends.data import mysql
 
 
 class EmbeddingModel(nn.Module):
@@ -21,6 +23,32 @@ class EmbeddingModel(nn.Module):
     def forward(self, x):
         out = torch.matmul(x, self.embedding.weight)
         return self.linear(out)
+
+
+def save_strings(path, name, data):
+    if isinstance(data, list):
+        data = np.array(data, dtype=str)
+    np.savetxt(os.path.join(path, name), data, fmt='%s')
+
+
+def save_as_pieces(model, path):
+    entries = mysql.select_articles(
+        field=['title', 'publisher'], publishers=['조선일보', '한겨례'])
+    titles = [e[0] for e in entries]
+    titles = utils.preprocess(titles)
+    publishers = [e[1] for e in entries]
+
+    os.makedirs(path, exist_ok=True)
+    save_strings(path, 'titles.tsv', titles)
+    save_strings(path, 'labels.tsv', publishers)
+
+    piece_list = []
+    piece_path = os.path.join(path, 'pieces.tsv')
+    with open(piece_path, 'w') as f1:
+        for title in titles:
+            pieces = model.EncodeAsPieces(title)
+            piece_list.append(pieces)
+            f1.write('\t'.join(pieces) + '\n')
 
 
 def to_multi_hot(pieces, unique_pieces=None):
@@ -70,8 +98,7 @@ def print_predictions(model, loader, titles):
             count += 1
 
 
-def start_interactive_session(model, unique_pieces):
-    spm_model = load_spm(path='../out/spm/model/spm.model')
+def start_interactive_session(model, spm_model, unique_pieces):
     while True:
         print('Sentence:', end=' ')
         sentence = input()
@@ -104,19 +131,22 @@ def train_model(model, loader):
 
 
 def main():
+    spm_model = utils.load_spm(path='../out/spm/model/spm.model')
+    save_as_pieces(spm_model, path='../out/spm/train')
+
     pieces = read_pieces('../out/spm/train/pieces.tsv')
     vocabulary = list(set(p for pp in pieces for p in pp))
     features = torch.from_numpy(to_multi_hot(pieces, vocabulary))
     labels = read_labels_as_tensor('../out/spm/train/labels.tsv')
 
-    model = EmbeddingModel(num_pieces=len(vocabulary))
+    cls_model = EmbeddingModel(num_pieces=len(vocabulary))
     loader = DataLoader(TensorDataset(features, labels), batch_size=256, shuffle=True)
-    train_model(model, loader)
+    train_model(cls_model, loader)
 
     title_path = '../out/spm/train/titles.tsv'
     titles = [e.strip() for e in open(title_path).readlines()]
-    print_predictions(model, loader, titles)
-    start_interactive_session(model, vocabulary)
+    print_predictions(cls_model, loader, titles)
+    start_interactive_session(cls_model, spm_model, vocabulary)
 
 
 if __name__ == '__main__':

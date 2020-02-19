@@ -1,10 +1,24 @@
 import os
 
 import numpy as np
+import sentencepiece as spm
 
 from newstrends import utils
 from newstrends.data import mysql
-from newstrends.spm import train_spm, load_spm
+
+
+def train_spm(title_path, model_path,
+              vocab_size=2048,
+              model_type='unigram',
+              character_coverage=0.9995):
+    # model_type is in { unigram, bpe, char, word }.
+    model_prefix = model_path[:model_path.rfind('.')]
+    spm.SentencePieceTrainer.Train(
+        f'--input={title_path} '
+        f'--model_prefix={model_prefix} '
+        f'--vocab_size={vocab_size} '
+        f'--model_type={model_type} '
+        f'--character_coverage={character_coverage}')
 
 
 def write_articles(articles, path):
@@ -13,45 +27,16 @@ def write_articles(articles, path):
     np.savetxt(path, articles, fmt='%s')
 
 
-def save_strings(path, name, data):
-    if isinstance(data, list):
-        data = np.array(data, dtype=str)
-    np.savetxt(os.path.join(path, name), data, fmt='%s')
-
-
-def save_as_pieces(model, out_path):
-    entries = mysql.select_articles(
-        field=['title', 'publisher'], publishers=['조선일보', '한겨례'])
-    titles = [e[0] for e in entries]
-    titles = utils.preprocess(titles)
-    publishers = [e[1] for e in entries]
-
-    os.makedirs(out_path, exist_ok=True)
-    save_strings(out_path, 'titles.tsv', titles)
-    save_strings(out_path, 'labels.tsv', publishers)
-
-    piece_list = []
-    piece_path = os.path.join(out_path, 'pieces.tsv')
-    with open(piece_path, 'w') as f1:
-        for title in titles:
-            pieces = model.EncodeAsPieces(title)
-            piece_list.append(pieces)
-            f1.write('\t'.join(pieces) + '\n')
-
-
 def main():
-    out_path = '../out'
-    os.makedirs(os.path.join(out_path, 'model'), exist_ok=True)
+    out_path = '../out/model'
+    os.makedirs(out_path, exist_ok=True)
 
-    title_path = os.path.join(out_path, 'model/titles.txt')
+    title_path = os.path.join(out_path, 'titles.txt')
     all_titles = mysql.select_all_titles()
     write_articles(all_titles, title_path)
 
-    model_path = os.path.join(out_path, 'model/spm.model')
-    if not os.path.exists(model_path):
-        train_spm(title_path, model_path)
-    model = load_spm(model_path)
-    save_as_pieces(model, os.path.join(out_path, 'train'))
+    model_path = os.path.join(out_path, 'spm.model')
+    train_spm(title_path, model_path)
 
 
 if __name__ == '__main__':

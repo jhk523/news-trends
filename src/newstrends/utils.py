@@ -1,5 +1,7 @@
 import re
 
+import sentencepiece as spm
+
 
 def preprocess(articles):
     stopwords = ['&#039;', '&quot;', '<span>', '</span>', '<span id="divTitle">',
@@ -16,3 +18,9 @@ def preprocess(articles):
             article = article[1:]
         new_articles.append(article)
     return new_articles
+
+
+def load_spm(path):
+    model = spm.SentencePieceProcessor()
+    model.Load(path)
+    return model
