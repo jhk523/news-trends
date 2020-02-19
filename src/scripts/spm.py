@@ -1,26 +1,16 @@
 import os
 
 import numpy as np
-import sentencepiece as spm
 
 from newstrends import utils
 from newstrends.data import mysql
+from newstrends.spm import train_spm, load_spm
 
 
 def write_articles(articles, path):
     articles = utils.preprocess(articles)
     articles = np.array(articles, dtype=str)
     np.savetxt(path, articles, fmt='%s')
-
-
-def train_spm(title_path, model_path, vocab_size=2048, model_type='unigram'):
-    # model_type is in { unigram, bpe, char, word }.
-    model_prefix = model_path[:model_path.rfind('.')]
-    spm.SentencePieceTrainer.Train(
-        f'--input={title_path} '
-        f'--model_prefix={model_prefix} '
-        f'--vocab_size={vocab_size} '
-        f'--model_type={model_type}')
 
 
 def encode_as_pieces(model, out_path):
@@ -53,8 +43,7 @@ def main():
     model_path = os.path.join(out_path, 'model/spm.model')
     if not os.path.exists(model_path):
         train_spm(title_path, model_path)
-    model = spm.SentencePieceProcessor()
-    model.Load(model_path)
+    model = load_spm(model_path)
     encode_as_pieces(model, out_path)
 
 

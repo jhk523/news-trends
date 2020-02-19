@@ -5,6 +5,8 @@ import torch
 from torch import nn, optim
 from torch.utils.data import DataLoader, TensorDataset
 
+from newstrends.spm import load_spm
+
 
 class EmbeddingModel(nn.Module):
     def __init__(self, num_pieces, embedding_dim=8):
@@ -21,8 +23,9 @@ class EmbeddingModel(nn.Module):
         return self.linear(out)
 
 
-def to_multi_hot(pieces):
-    unique_pieces = list(set(p for pp in pieces for p in pp))
+def to_multi_hot(pieces, unique_pieces=None):
+    if unique_pieces is None:
+        unique_pieces = list(set(p for pp in pieces for p in pp))
     piece_dict = {p: i for (i, p) in enumerate(unique_pieces)}
     num_data = len(pieces)
     num_pieces = len(unique_pieces)
@@ -33,16 +36,45 @@ def to_multi_hot(pieces):
     return matrix
 
 
-def main():
+def print_predictions(model, loader):
     title_path = '../out/spm/titles.tsv'
     titles = [e.strip() for e in open(title_path).readlines()]
 
+    count = 0
+    for x, y in loader:
+        y_pred = torch.softmax(model(x), dim=1)
+        for i in range(x.size(0)):
+            pred_str = ', '.join(f'{e * 100:.1f}' for e in y_pred[i])
+            label = '조선일보' if y[i] == 0 else '한겨레'
+            print(f'Title: {titles[count]}')
+            print(f'Prediction: ({pred_str})')
+            print(f'True label: ({label})')
+            print()
+            count += 1
+
+
+def start_interactive_session(model, unique_pieces):
+    spm_model = load_spm(path='../out/spm/model/spm.model')
+    while True:
+        print('Sentence:', end=' ')
+        sentence = input()
+        pieces = spm_model.encode_as_pieces(sentence)
+        matrix = torch.from_numpy(to_multi_hot([pieces], unique_pieces))
+        y_pred = torch.softmax(model(matrix), dim=1)
+
+        pred_str = ', '.join(f'{e * 100:.1f}' for e in y_pred[0])
+        print(f'Prediction: ({pred_str})')
+        print()
+
+
+def main():
     piece_path = '../out/spm/pieces.tsv'
     pieces = []
     with open(piece_path) as f:
         for line in f:
             pieces.append(line.strip().split('\t'))
-    features = torch.from_numpy(to_multi_hot(pieces))
+    unique_pieces = list(set(p for pp in pieces for p in pp))
+    features = torch.from_numpy(to_multi_hot(pieces, unique_pieces))
 
     label_path = '../out/spm/labels.tsv'
     labels = []
@@ -62,7 +94,7 @@ def main():
 
     num_data = len(pieces)
     batch_size = 256
-    num_epochs = 500
+    num_epochs = 1000
 
     dataset = TensorDataset(features, labels)
     data = DataLoader(dataset, batch_size, shuffle=True)
@@ -77,20 +109,11 @@ def main():
             loss.backward()
             optimizer.step()
             loss_sum += loss.item() * x.size(0)
-        if (epoch + 1) % 10 == 0:
+        if (epoch + 1) % 100 == 0:
             print(f'epoch {epoch + 1:3d}: {loss_sum / num_data}')
 
-    count = 0
-    for x, y in data:
-        y_pred = torch.softmax(model(x), dim=1)
-        for i in range(x.size(0)):
-            pred_str = ', '.join(f'{e * 100:.1f}' for e in y_pred[i])
-            label = '조선일보' if y[i] == 0 else '한겨레'
-            print(f'Title: {titles[count]}')
-            print(f'Prediction: ({pred_str})')
-            print(f'True label: ({label})')
-            print()
-            count += 1
+    print_predictions(model, data)
+    start_interactive_session(model, unique_pieces)
 
 
 if __name__ == '__main__':
