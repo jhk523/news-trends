@@ -26,11 +26,12 @@ def save_as_pieces(model, out_path):
     titles = utils.preprocess(titles)
     publishers = [e[1] for e in entries]
 
-    save_strings(out_path, 'train_titles.tsv', titles)
-    save_strings(out_path, 'train_labels.tsv', publishers)
+    os.makedirs(out_path, exist_ok=True)
+    save_strings(out_path, 'titles.tsv', titles)
+    save_strings(out_path, 'labels.tsv', publishers)
 
     piece_list = []
-    piece_path = os.path.join(out_path, 'train_pieces.tsv')
+    piece_path = os.path.join(out_path, 'pieces.tsv')
     with open(piece_path, 'w') as f1:
         for title in titles:
             pieces = model.EncodeAsPieces(title)
@@ -39,7 +40,7 @@ def save_as_pieces(model, out_path):
 
 
 def main():
-    out_path = '../out/spm'
+    out_path = '../out'
     os.makedirs(os.path.join(out_path, 'model'), exist_ok=True)
 
     title_path = os.path.join(out_path, 'model/titles.txt')
@@ -50,7 +51,7 @@ def main():
     if not os.path.exists(model_path):
         train_spm(title_path, model_path)
     model = load_spm(model_path)
-    save_as_pieces(model, out_path)
+    save_as_pieces(model, os.path.join(out_path, 'train'))
 
 
 if __name__ == '__main__':

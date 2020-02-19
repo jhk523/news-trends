@@ -36,6 +36,26 @@ def to_multi_hot(pieces, unique_pieces=None):
     return matrix
 
 
+def read_pieces(path):
+    pieces = []
+    with open(path) as f:
+        for line in f:
+            pieces.append(line.strip().split('\t'))
+    return pieces
+
+
+def read_labels_as_tensor(path):
+    labels = []
+    label_map = {}
+    with open(path) as f:
+        for line in f:
+            label = line.strip()
+            if label not in label_map:
+                label_map[label] = len(label_map)
+            labels.append(label_map[label])
+    return torch.tensor(labels)
+
+
 def print_predictions(model, loader, titles):
     count = 0
     for x, y in loader:
@@ -64,55 +84,39 @@ def start_interactive_session(model, unique_pieces):
         print()
 
 
-def main():
-    piece_path = '../out/spm/train_pieces.tsv'
-    pieces = []
-    with open(piece_path) as f:
-        for line in f:
-            pieces.append(line.strip().split('\t'))
-    unique_pieces = list(set(p for pp in pieces for p in pp))
-    features = torch.from_numpy(to_multi_hot(pieces, unique_pieces))
-
-    label_path = '../out/spm/train_labels.tsv'
-    labels = []
-    with open(label_path) as f:
-        for line in f:
-            if line.strip() == '조선일보':
-                labels.append(0)
-            elif line.strip() == '한겨례':
-                labels.append(1)
-            else:
-                raise ValueError()
-    labels = torch.tensor(labels)
-
-    unique_pieces = list(set(p for pp in pieces for p in pp))
-    num_pieces = len(unique_pieces)
-    model = EmbeddingModel(num_pieces)
-
-    num_data = len(pieces)
-    batch_size = 256
+def train_model(model, loader):
     num_epochs = 1000
-
-    dataset = TensorDataset(features, labels)
-    data = DataLoader(dataset, batch_size, shuffle=True)
     loss_func = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=1e-4)
 
     for epoch in range(num_epochs):
         loss_sum = 0
-        for x, y in data:
+        num_data = 0
+        for x, y in loader:
             y_pred = model(x)
             loss = loss_func(y_pred, y)
             loss.backward()
             optimizer.step()
             loss_sum += loss.item() * x.size(0)
+            num_data += x.size(0)
         if (epoch + 1) % 100 == 0:
             print(f'epoch {epoch + 1:3d}: {loss_sum / num_data}')
 
-    title_path = '../out/spm/train_titles.tsv'
+
+def main():
+    pieces = read_pieces('../out/spm/train/pieces.tsv')
+    vocabulary = list(set(p for pp in pieces for p in pp))
+    features = torch.from_numpy(to_multi_hot(pieces, vocabulary))
+    labels = read_labels_as_tensor('../out/spm/train/labels.tsv')
+
+    model = EmbeddingModel(num_pieces=len(vocabulary))
+    loader = DataLoader(TensorDataset(features, labels), batch_size=256, shuffle=True)
+    train_model(model, loader)
+
+    title_path = '../out/spm/train/titles.tsv'
     titles = [e.strip() for e in open(title_path).readlines()]
-    print_predictions(model, data, titles)
-    start_interactive_session(model, unique_pieces)
+    print_predictions(model, loader, titles)
+    start_interactive_session(model, vocabulary)
 
 
 if __name__ == '__main__':
