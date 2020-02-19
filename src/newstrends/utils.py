@@ -2,7 +2,8 @@ import re
 
 
 def preprocess(articles):
-    stopwords = ['&#039;']
+    stopwords = ['&#039;', '&quot;', '<span>', '</span>', '<span id="divTitle">',
+                 '</font>', '<b>', '</b>']
     new_articles = []
     for article in articles:
         for word in stopwords:
