@@ -42,13 +42,40 @@ def read_vocabulary(path):
     return vocabulary
 
 
+def to_integer_matrix(pieces, vocabulary=None):
+    if vocabulary is None:
+        vocabulary = list(set(p for pp in pieces for p in pp))
+    piece_dict = {p: i for (i, p) in enumerate(vocabulary)}
+
+    indices = []
+    max_len = 0
+    for i, pp in enumerate(pieces):
+        index = []
+        for p in pp:
+            if p in piece_dict:
+                index.append(piece_dict[p])
+        if len(index) > max_len:
+            max_len = len(index)
+        indices.append(index)
+
+    num_data = len(pieces)
+    matrix = np.full((num_data, max_len), -1, dtype=np.int64)
+    for i, dd in enumerate(indices):
+        j = max_len - len(dd)
+        for d in dd:
+            matrix[i, j] = d
+            j += 1
+
+    return torch.from_numpy(matrix)
+
+
 def to_multi_hot_matrix(pieces, vocabulary=None):
     if vocabulary is None:
         vocabulary = list(set(p for pp in pieces for p in pp))
     piece_dict = {p: i for (i, p) in enumerate(vocabulary)}
     num_data = len(pieces)
-    num_pieces = len(vocabulary)
-    matrix = np.zeros((num_data, num_pieces), dtype=np.float32)
+    vocab_size = len(vocabulary)
+    matrix = np.zeros((num_data, vocab_size), dtype=np.float32)
     for i, pp in enumerate(pieces):
         for p in pp:
             if p in piece_dict:
@@ -70,5 +97,6 @@ def train_model(model, loader, num_epochs=1000, lr=1e-3, print_every=1):
             optimizer.step()
             loss_sum += loss.item() * x.size(0)
             num_data += x.size(0)
+            print(loss.item())
         if (epoch + 1) % print_every == 0:
             print(f'epoch {epoch + 1:3d}: {loss_sum / num_data}')

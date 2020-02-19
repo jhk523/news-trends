@@ -90,7 +90,7 @@ def main():
     features = utils.to_multi_hot_matrix(pieces, vocabulary)
     labels = read_labels_as_tensor('../out/spm/train/labels.tsv')
 
-    cls_model = models.EmbeddingModel(num_pieces=len(vocabulary), num_classes=2)
+    cls_model = models.SoftmaxClassifier(vocab_size=len(vocabulary), num_classes=2)
     loader = DataLoader(TensorDataset(features, labels), batch_size=256, shuffle=True)
     utils.train_model(cls_model, loader, lr=1e-4, print_every=100)
 
