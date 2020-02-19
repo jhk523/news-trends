@@ -36,10 +36,7 @@ def to_multi_hot(pieces, unique_pieces=None):
     return matrix
 
 
-def print_predictions(model, loader):
-    title_path = '../out/spm/titles.tsv'
-    titles = [e.strip() for e in open(title_path).readlines()]
-
+def print_predictions(model, loader, titles):
     count = 0
     for x, y in loader:
         y_pred = torch.softmax(model(x), dim=1)
@@ -68,7 +65,7 @@ def start_interactive_session(model, unique_pieces):
 
 
 def main():
-    piece_path = '../out/spm/pieces.tsv'
+    piece_path = '../out/spm/train_pieces.tsv'
     pieces = []
     with open(piece_path) as f:
         for line in f:
@@ -76,7 +73,7 @@ def main():
     unique_pieces = list(set(p for pp in pieces for p in pp))
     features = torch.from_numpy(to_multi_hot(pieces, unique_pieces))
 
-    label_path = '../out/spm/labels.tsv'
+    label_path = '../out/spm/train_labels.tsv'
     labels = []
     with open(label_path) as f:
         for line in f:
@@ -112,7 +109,9 @@ def main():
         if (epoch + 1) % 100 == 0:
             print(f'epoch {epoch + 1:3d}: {loss_sum / num_data}')
 
-    print_predictions(model, data)
+    title_path = '../out/spm/train_titles.tsv'
+    titles = [e.strip() for e in open(title_path).readlines()]
+    print_predictions(model, data, titles)
     start_interactive_session(model, unique_pieces)
 
 

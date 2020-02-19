@@ -2,11 +2,13 @@ import re
 
 
 def preprocess(articles):
+    stopwords = ['&#039;']
     new_articles = []
     for article in articles:
-        new_article = article
-        new_article = re.sub(' +', ' ', new_article)
-        if new_article.startswith(' '):
-            new_article = new_article[1:]
-        new_articles.append(new_article)
+        for word in stopwords:
+            article = article.replace(word, '')
+        article = re.sub(' +', ' ', article)
+        if article.startswith(' '):
+            article = article[1:]
+        new_articles.append(article)
     return new_articles

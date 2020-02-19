@@ -13,23 +13,29 @@ def write_articles(articles, path):
     np.savetxt(path, articles, fmt='%s')
 
 
-def encode_as_pieces(model, out_path):
+def save_strings(path, name, data):
+    if isinstance(data, list):
+        data = np.array(data, dtype=str)
+    np.savetxt(os.path.join(path, name), data, fmt='%s')
+
+
+def save_as_pieces(model, out_path):
     entries = mysql.select_articles(
         field=['title', 'publisher'], publishers=['조선일보', '한겨례'])
     titles = [e[0] for e in entries]
     titles = utils.preprocess(titles)
     publishers = [e[1] for e in entries]
 
-    title_path = os.path.join(out_path, 'titles.tsv')
-    piece_path = os.path.join(out_path, 'pieces.tsv')
-    label_path = os.path.join(out_path, 'labels.tsv')
+    save_strings(out_path, 'train_titles.tsv', titles)
+    save_strings(out_path, 'train_labels.tsv', publishers)
+
+    piece_list = []
+    piece_path = os.path.join(out_path, 'train_pieces.tsv')
     with open(piece_path, 'w') as f1:
         for title in titles:
             pieces = model.EncodeAsPieces(title)
+            piece_list.append(pieces)
             f1.write('\t'.join(pieces) + '\n')
-
-    np.savetxt(title_path, np.array(titles, dtype=str), fmt='%s')
-    np.savetxt(label_path, np.array(publishers, dtype=str), fmt='%s')
 
 
 def main():
@@ -44,7 +50,7 @@ def main():
     if not os.path.exists(model_path):
         train_spm(title_path, model_path)
     model = load_spm(model_path)
-    encode_as_pieces(model, out_path)
+    save_as_pieces(model, out_path)
 
 
 if __name__ == '__main__':
