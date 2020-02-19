@@ -28,7 +28,7 @@ def write_articles(articles, path):
 
 
 def main():
-    out_path = '../out/model'
+    out_path = '../out/spm'
     os.makedirs(out_path, exist_ok=True)
 
     title_path = os.path.join(out_path, 'titles.txt')

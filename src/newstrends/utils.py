@@ -86,17 +86,27 @@ def to_multi_hot_matrix(pieces, vocabulary=None):
 def train_model(model, loader, num_epochs=1000, lr=1e-3, print_every=1):
     loss_func = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr)
+    device = to_device()
 
     for epoch in range(num_epochs):
-        loss_sum = 0
-        num_data = 0
+        loss_sum, num_data = 0, 0
+
         for x, y in loader:
+            x = x.to(device)
+            y = y.to(device)
             y_pred = model(x)
             loss = loss_func(y_pred, y)
             loss.backward()
             optimizer.step()
             loss_sum += loss.item() * x.size(0)
             num_data += x.size(0)
-            print(loss.item())
+
         if (epoch + 1) % print_every == 0:
             print(f'epoch {epoch + 1:3d}: {loss_sum / num_data}')
+
+
+def to_device():
+    if torch.cuda.is_available():
+        return torch.device('cuda')
+    else:
+        return torch.device('cpu')
