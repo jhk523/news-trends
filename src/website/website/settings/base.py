@@ -19,6 +19,8 @@ pymysql.install_as_MySQLdb()
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ROOT_DIR = os.path.abspath((__file__ + "/../../../../../"))
+TEMPLATES_DIR = os.path.join(os.path.abspath((__file__ + "/../../../")),
+                             'templates')
 
 SECRET_INFO_DIR = os.path.join(ROOT_DIR, 'data', 'web_secret.json')
 DB_INFO_DIR = os.path.join(ROOT_DIR, 'data', 'db_info.json')
@@ -45,6 +47,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'search.apps.SearchConfig'
 ]
 
 MIDDLEWARE = [
@@ -62,7 +65,7 @@ ROOT_URLCONF = 'website.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [TEMPLATES_DIR],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
