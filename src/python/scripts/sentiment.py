@@ -68,7 +68,7 @@ def main():
     vocab_size = len(vocab)
 
     num_classes = 2
-    embedding_dim = 128
+    embedding_dim = 64
     cell_type = 'lstm'
     num_layers = 1
 
