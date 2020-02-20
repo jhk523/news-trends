@@ -53,7 +53,7 @@ def main():
     #     vocab_size=vocab_size, num_classes=1, embedding_dim=8) \
     #     .to(utils.to_device())
     cls_model = models.RNNClassifier(
-        vocab_size=vocab_size, num_classes=2, embedding_dim=128,
+        vocab_size=vocab_size, num_classes=2, embedding_dim=128, num_layers=1,
         cell_type='lstm').to(utils.to_device())
     # cls_model = models.SoftmaxClassifier(
     #     vocab_size=vocab_size, num_classes=2, embedding_dim=64) \

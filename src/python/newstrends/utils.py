@@ -1,3 +1,4 @@
+import io
 import re
 
 import numpy as np
@@ -79,10 +80,24 @@ def to_multi_hot_matrix(pieces, vocabulary=None):
     return torch.from_numpy(matrix)
 
 
-def train_model(model, loader, num_epochs=1000, lr=1e-3, print_every=1):
+def to_optimizer(name, model, lr):
+    if name == 'adam':
+        return optim.Adam(model.parameters(), lr)
+    elif name == 'sgd':
+        return optim.SGD(model.parameters(), lr)
+    else:
+        raise ValueError(name)
+
+
+def train_model(model, loader, num_epochs=1000, lr=1e-3, print_every=1,
+                patience=10, optimizer='adam'):
     loss_func = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr)
+    opt_module = to_optimizer(optimizer, model, lr)
     device = to_device()
+
+    best_loss = np.inf
+    best_epoch = 0
+    saved_model = None
 
     for epoch in range(num_epochs):
         loss_sum, num_data = 0, 0
@@ -93,12 +108,24 @@ def train_model(model, loader, num_epochs=1000, lr=1e-3, print_every=1):
             y_pred = model(x)
             loss = loss_func(y_pred, y)
             loss.backward()
-            optimizer.step()
+            opt_module.step()
             loss_sum += loss.item() * x.size(0)
             num_data += x.size(0)
 
         if (epoch + 1) % print_every == 0:
             print(f'epoch {epoch + 1:3d}: {loss_sum / num_data}')
+
+        if loss_sum < best_loss:
+            best_loss = loss_sum
+            best_epoch = epoch
+            saved_model = io.BytesIO()
+            torch.save(model.state_dict(), saved_model)
+
+        if epoch + patience >= best_epoch:
+            break
+
+    saved_model.seek(0)
+    model.load_state_dict(torch.load(saved_model))
 
 
 def to_device():

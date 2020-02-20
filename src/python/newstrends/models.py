@@ -32,10 +32,9 @@ def lookup_embedding(embedding, x, transpose=True):
 
 
 class RNNClassifier(nn.Module):
-    def __init__(self, vocab_size, num_classes, embedding_dim=8, cell_type='lstm'):
+    def __init__(self, vocab_size, num_classes, embedding_dim=8, cell_type='lstm', num_layers=1):
         super().__init__()
         hidden_size = 2 * embedding_dim
-        num_layers = 2
 
         assert cell_type in {'gru', 'lstm'}
         if cell_type == 'lstm':
