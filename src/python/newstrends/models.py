@@ -21,21 +21,28 @@ class SoftmaxClassifier(nn.Module):
         return self.linear(out)
 
 
-def lookup_embedding(embedding, x, transpose=True):
-    if transpose:
+def lookup_embedding(embedding, x, transpose_x=True, transpose_mask=True):
+    if transpose_x and transpose_mask:
         x = x.transpose(0, 1)
+        mask = x < 0
+    elif transpose_x:
+        mask = x < 0
+        x = x.transpose(0, 1)
+    elif transpose_mask:
+        mask = x.transpose(0, 1) < 0
+    else:
+        mask = x < 0
+
     out = torch.clamp(x, min=0)
     out = embedding.weight.index_select(dim=0, index=out.view(-1))
     out = out.view(x.size(0), x.size(1), -1)
-    mask = x < 0
     return out, mask
 
 
 class RNNClassifier(nn.Module):
-    def __init__(self, vocab_size, num_classes, embedding_dim=8, cell_type='lstm'):
+    def __init__(self, vocab_size, num_classes, embedding_dim=8, cell_type='lstm', num_layers=1):
         super().__init__()
         hidden_size = 2 * embedding_dim
-        num_layers = 2
 
         assert cell_type in {'gru', 'lstm'}
         if cell_type == 'lstm':
@@ -46,7 +53,7 @@ class RNNClassifier(nn.Module):
         self.embedding = nn.Embedding(vocab_size, embedding_dim)
         self.dense = nn.Sequential(
             nn.Linear(hidden_size, embedding_dim),
-            nn.Tanh(),
+            nn.ELU(),
             nn.Linear(embedding_dim, num_classes))
 
     # noinspection PyShadowingBuiltins
@@ -61,12 +68,11 @@ class RNNClassifier(nn.Module):
 
 
 class TransformerClassifier(nn.Module):
-    def __init__(self, vocab_size, num_classes, embedding_dim=8):
+    def __init__(self, vocab_size, num_classes, embedding_dim, nhead=1,
+                 num_encoder_layers=2):
         super().__init__()
         d_model = embedding_dim
-        nhead = 1
         dim_feedforward = 2 * d_model
-        num_encoder_layers = 2
 
         self.embedding = nn.Embedding(vocab_size, embedding_dim)
         encoder_layer = TransformerEncoderLayer(d_model, nhead, dim_feedforward)
@@ -80,10 +86,6 @@ class TransformerClassifier(nn.Module):
         return super().__call__(*input, **kwargs)
 
     def forward(self, x):
-        x_t = x.transpose(0, 1)
-        out = torch.clamp(x_t, min=0)
-        out = self.embedding.weight.index_select(dim=0, index=out.view(-1))
-        out = out.view(x_t.size(0), x_t.size(1), -1)
-        mask = x_t < 0
+        out, mask = lookup_embedding(self.embedding, x, transpose_mask=False)
         out = self.encoder(out, src_key_padding_mask=mask)
         return self.linear(out[0])

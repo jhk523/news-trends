@@ -5,18 +5,19 @@ import torch
 from torch.utils.data import TensorDataset, DataLoader
 
 from newstrends import utils, models
+from newstrends.data import mysql
 
 
-def read_reviews():
-    df = pd.read_csv('../data/ratings.txt', delimiter='\t')
+def read_reviews(path):
+    df = pd.read_csv(path, delimiter='\t')
     df = df[df['document'].notnull()]
-    reviews = df['document'].tolist()
+    reviews = utils.preprocess(df['document'].tolist())
     labels = df['label'].tolist()
     return reviews, labels
 
 
 def train_classifier(cls_model, spm_model, vocab):
-    reviews, labels = read_reviews()
+    reviews, labels = read_reviews(path='../../data/ratings.txt')
     pieces = [spm_model.encode_as_pieces(r) for r in reviews]
     features = utils.to_integer_matrix(pieces, vocab, padding='first')
     # features = utils.to_multi_hot_matrix(pieces, vocab)
@@ -41,23 +42,51 @@ def start_interactive_session(cls_model, spm_model, vocabulary):
         print()
 
 
+def test_for_article_titles(cls_model, spm_model, vocabulary):
+    device = utils.to_device()
+    titles = mysql.select_all_titles(preprocess=True)
+    pieces = [spm_model.encode_as_pieces(t) for t in titles]
+    features = utils.to_integer_matrix(pieces, vocabulary, padding='first')
+    loader = DataLoader(TensorDataset(features), batch_size=1024)
+
+    count = 0
+    for x, in loader:
+        y_pred = torch.softmax(cls_model(x.to(device)), dim=1)
+        for i in range(x.size(0)):
+            pred_str = ', '.join(f'{e * 100:.1f}' for e in y_pred[i])
+            print(f'Title: {titles[count]}')
+            print(f'Prediction: ({pred_str})')
+            print()
+            count += 1
+
+
 def main():
-    out_path = '../out'
+    out_path = '../../out'
     spm_path = os.path.join(out_path, 'spm')
     spm_model = utils.load_spm(os.path.join(spm_path, 'spm.model'))
     vocab = utils.read_vocabulary(os.path.join(spm_path, 'spm.vocab'))
     vocab_size = len(vocab)
 
     cls_path = os.path.join(out_path, 'sent/model.pth')
-    # cls_model = models.TransformerClassifier(
-    #     vocab_size=vocab_size, num_classes=1, embedding_dim=8) \
-    #     .to(utils.to_device())
-    cls_model = models.RNNClassifier(
-        vocab_size=vocab_size, num_classes=2, embedding_dim=128,
-        cell_type='lstm').to(utils.to_device())
-    # cls_model = models.SoftmaxClassifier(
-    #     vocab_size=vocab_size, num_classes=2, embedding_dim=64) \
-    #     .to(utils.to_device())
+
+    num_classes = 2
+    embedding_dim = 64
+    cell_type = 'lstm'
+    num_layers = 1
+    nhead = 2
+    num_encoder_layers = 2
+
+    model_type = 'rnn'
+    if model_type == 'rnn':
+        cls_model = models.RNNClassifier(
+            vocab_size, num_classes, embedding_dim, cell_type, num_layers) \
+            .to(utils.to_device())
+    elif model_type == 'transformer':
+        cls_model = models.TransformerClassifier(
+            vocab_size, num_classes, embedding_dim, nhead, num_encoder_layers) \
+            .to(utils.to_device())
+    else:
+        raise ValueError(model_type)
 
     if not os.path.exists(cls_path):
         train_classifier(cls_model, spm_model, vocab)
@@ -66,7 +95,8 @@ def main():
     else:
         cls_model.load_state_dict(torch.load(cls_path))
 
-    start_interactive_session(cls_model, spm_model, vocab)
+    # start_interactive_session(cls_model, spm_model, vocab)
+    test_for_article_titles(cls_model, spm_model, vocab)
 
 
 if __name__ == '__main__':
