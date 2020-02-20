@@ -8,8 +8,8 @@ from newstrends import utils, models
 from newstrends.data import mysql
 
 
-def read_reviews():
-    df = pd.read_csv('../data/ratings.txt', delimiter='\t')
+def read_reviews(path):
+    df = pd.read_csv(path, delimiter='\t')
     df = df[df['document'].notnull()]
     reviews = utils.preprocess(df['document'].tolist())
     labels = df['label'].tolist()
@@ -17,7 +17,7 @@ def read_reviews():
 
 
 def train_classifier(cls_model, spm_model, vocab):
-    reviews, labels = read_reviews()
+    reviews, labels = read_reviews(path='../../data/ratings.txt')
     pieces = [spm_model.encode_as_pieces(r) for r in reviews]
     features = utils.to_integer_matrix(pieces, vocab, padding='first')
     # features = utils.to_multi_hot_matrix(pieces, vocab)
