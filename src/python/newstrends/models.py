@@ -35,17 +35,18 @@ class RNNClassifier(nn.Module):
     def __init__(self, vocab_size, num_classes, embedding_dim=8, cell_type='lstm'):
         super().__init__()
         hidden_size = 2 * embedding_dim
+        num_layers = 2
 
         assert cell_type in {'gru', 'lstm'}
         if cell_type == 'lstm':
-            self.rnn = nn.LSTM(embedding_dim, hidden_size)
+            self.rnn = nn.LSTM(embedding_dim, hidden_size, num_layers)
         else:
-            self.rnn = nn.GRU(embedding_dim, hidden_size)
+            self.rnn = nn.GRU(embedding_dim, hidden_size, num_layers)
 
         self.embedding = nn.Embedding(vocab_size, embedding_dim)
         self.dense = nn.Sequential(
             nn.Linear(hidden_size, embedding_dim),
-            nn.ReLU(),
+            nn.Tanh(),
             nn.Linear(embedding_dim, num_classes))
 
     # noinspection PyShadowingBuiltins

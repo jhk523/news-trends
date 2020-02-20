@@ -62,6 +62,9 @@ def main():
 
     words_list = parse_by_konlpy(titles + contents)
     # words_list = parse_by_soynlp(titles)
+
+    ############################## word2vec part ###############################
+
     words_all = list(set([w for words in words_list for w in words]))
     word_dict = gensim.models.word2vec.Word2Vec(words_list, size=8, window=4)
 
@@ -73,10 +76,12 @@ def main():
     words = np.array(words, dtype=str)
     vectors = np.array(vectors, dtype=np.float32)
 
-    out_path = '../out'
+    out_path = '../../../out'
     os.makedirs(out_path, exist_ok=True)
     np.savetxt(os.path.join(out_path, 'words.tsv'), words, fmt='%s', delimiter='\t')
     np.savetxt(os.path.join(out_path, 'vectors.tsv'), vectors, delimiter='\t')
+
+    ############################################################################
 
 
 if __name__ == '__main__':
