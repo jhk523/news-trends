@@ -19,9 +19,8 @@ def train_classifier(cls_model, spm_model, vocab):
     reviews, labels = read_reviews()
     pieces = [spm_model.encode_as_pieces(r) for r in reviews]
     features = utils.to_integer_matrix(pieces, vocab)
-    labels = torch.tensor(labels)
-    loader = DataLoader(
-        TensorDataset(features, labels), batch_size=512, shuffle=True)
+    dataset = TensorDataset(features, torch.tensor(labels))
+    loader = DataLoader(dataset, batch_size=2048, shuffle=True)
     utils.train_model(
         cls_model, loader, lr=1e-4, print_every=5, num_epochs=100)
 
@@ -48,8 +47,9 @@ def main():
 
     cls_path = os.path.join(out_path, 'sent/model.pth')
     cls_model = models.GRUClassifier(
-        vocab_size=len(vocab), num_classes=2, embedding_dim=8, hidden_size=8) \
+        vocab_size=len(vocab), num_classes=2, embedding_dim=8, hidden_size=16) \
         .to(utils.to_device())
+
     if not os.path.exists(cls_path):
         train_classifier(cls_model, spm_model, vocab)
         os.makedirs(os.path.dirname(cls_path), exist_ok=True)

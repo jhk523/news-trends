@@ -42,30 +42,26 @@ def read_vocabulary(path):
     return vocabulary
 
 
-def to_integer_matrix(pieces, vocabulary=None):
+def to_integer_matrix(pieces, vocabulary=None, padding='first'):
+    assert padding in {'first', 'last'}
+
     if vocabulary is None:
         vocabulary = list(set(p for pp in pieces for p in pp))
     piece_dict = {p: i for (i, p) in enumerate(vocabulary)}
 
     indices = []
-    max_len = 0
     for i, pp in enumerate(pieces):
-        index = []
-        for p in pp:
-            if p in piece_dict:
-                index.append(piece_dict[p])
-        if len(index) > max_len:
-            max_len = len(index)
-        indices.append(index)
+        indices.append([piece_dict[p] for p in pp if p in piece_dict])
+    max_len = max(len(index) for index in indices)
 
     num_data = len(pieces)
     matrix = np.full((num_data, max_len), -1, dtype=np.int64)
-    for i, dd in enumerate(indices):
-        j = max_len - len(dd)
-        for d in dd:
-            matrix[i, j] = d
-            j += 1
-
+    for i, index in enumerate(indices):
+        k = 0
+        if padding == 'first':
+            k = max_len - len(index)
+        for j, d in enumerate(index):
+            matrix[i, j + k] = d
     return torch.from_numpy(matrix)
 
 
