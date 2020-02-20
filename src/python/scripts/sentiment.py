@@ -5,12 +5,13 @@ import torch
 from torch.utils.data import TensorDataset, DataLoader
 
 from newstrends import utils, models
+from newstrends.data import mysql
 
 
 def read_reviews():
     df = pd.read_csv('../data/ratings.txt', delimiter='\t')
     df = df[df['document'].notnull()]
-    reviews = df['document'].tolist()
+    reviews = utils.preprocess(df['document'].tolist())
     labels = df['label'].tolist()
     return reviews, labels
 
@@ -41,8 +42,26 @@ def start_interactive_session(cls_model, spm_model, vocabulary):
         print()
 
 
+def test_for_article_titles(cls_model, spm_model, vocabulary):
+    device = utils.to_device()
+    titles = mysql.select_all_titles(preprocess=True)
+    pieces = [spm_model.encode_as_pieces(t) for t in titles]
+    features = utils.to_integer_matrix(pieces, vocabulary, padding='first')
+    loader = DataLoader(TensorDataset(features), batch_size=1024)
+
+    count = 0
+    for x, in loader:
+        y_pred = torch.softmax(cls_model(x.to(device)), dim=1)
+        for i in range(x.size(0)):
+            pred_str = ', '.join(f'{e * 100:.1f}' for e in y_pred[i])
+            print(f'Title: {titles[count]}')
+            print(f'Prediction: ({pred_str})')
+            print()
+            count += 1
+
+
 def main():
-    out_path = '../out'
+    out_path = '../../out'
     spm_path = os.path.join(out_path, 'spm')
     spm_model = utils.load_spm(os.path.join(spm_path, 'spm.model'))
     vocab = utils.read_vocabulary(os.path.join(spm_path, 'spm.vocab'))
@@ -71,7 +90,8 @@ def main():
     else:
         cls_model.load_state_dict(torch.load(cls_path))
 
-    start_interactive_session(cls_model, spm_model, vocab)
+    # start_interactive_session(cls_model, spm_model, vocab)
+    test_for_article_titles(cls_model, spm_model, vocab)
 
 
 if __name__ == '__main__':

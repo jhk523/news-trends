@@ -112,7 +112,7 @@ def train_model(model, loader, num_epochs=1000, lr=1e-3, print_every=1,
             saved_model = io.BytesIO()
             torch.save(model.state_dict(), saved_model)
 
-        if epoch + patience >= best_epoch:
+        if epoch >= best_epoch + patience:
             break
 
     saved_model.seek(0)

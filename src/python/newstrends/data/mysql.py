@@ -4,6 +4,8 @@ import os
 import pandas as pd
 from sqlalchemy import create_engine
 
+from newstrends import utils
+
 _ROOT_DIR = os.path.abspath(__file__ + "/../../../../../")
 _ENGINE = None
 
@@ -36,10 +38,13 @@ def create_news_table():
     get_engine().execute(query)
 
 
-def select_all_titles():
+def select_all_titles(preprocess):
     sql = 'select title from news'
     entries = get_engine().execute(sql)
-    return [e[0] for e in entries]
+    titles = [e[0] for e in entries]
+    if preprocess:
+        titles = utils.preprocess(titles)
+    return titles
 
 
 def select_articles(field=None, publishers=None):
