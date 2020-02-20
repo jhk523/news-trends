@@ -48,13 +48,18 @@ def main():
     vocab = utils.read_vocabulary(os.path.join(spm_path, 'spm.vocab'))
     vocab_size = len(vocab)
 
+    num_classes = 2
+    embedding_dim = 128
+    cell_type = 'lstm'
+    num_layers = 1
+
     cls_path = os.path.join(out_path, 'sent/model.pth')
     # cls_model = models.TransformerClassifier(
     #     vocab_size=vocab_size, num_classes=1, embedding_dim=8) \
     #     .to(utils.to_device())
     cls_model = models.RNNClassifier(
-        vocab_size=vocab_size, num_classes=2, embedding_dim=128, num_layers=1,
-        cell_type='lstm').to(utils.to_device())
+        vocab_size, num_classes, embedding_dim, cell_type, num_layers) \
+        .to(utils.to_device())
     # cls_model = models.SoftmaxClassifier(
     #     vocab_size=vocab_size, num_classes=2, embedding_dim=64) \
     #     .to(utils.to_device())

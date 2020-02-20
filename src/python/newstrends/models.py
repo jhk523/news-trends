@@ -45,7 +45,7 @@ class RNNClassifier(nn.Module):
         self.embedding = nn.Embedding(vocab_size, embedding_dim)
         self.dense = nn.Sequential(
             nn.Linear(hidden_size, embedding_dim),
-            nn.Tanh(),
+            nn.ELU(inplace=True),
             nn.Linear(embedding_dim, num_classes))
 
     # noinspection PyShadowingBuiltins

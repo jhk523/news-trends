@@ -80,19 +80,10 @@ def to_multi_hot_matrix(pieces, vocabulary=None):
     return torch.from_numpy(matrix)
 
 
-def to_optimizer(name, model, lr):
-    if name == 'adam':
-        return optim.Adam(model.parameters(), lr)
-    elif name == 'sgd':
-        return optim.SGD(model.parameters(), lr)
-    else:
-        raise ValueError(name)
-
-
 def train_model(model, loader, num_epochs=1000, lr=1e-3, print_every=1,
-                patience=10, optimizer='adam'):
+                patience=10):
     loss_func = nn.CrossEntropyLoss()
-    opt_module = to_optimizer(optimizer, model, lr)
+    opt_module = optim.Adam(model.parameters(), lr)
     device = to_device()
 
     best_loss = np.inf
