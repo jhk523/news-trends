@@ -1,17 +1,8 @@
-"""
-Refer to the following links:
-- soynlp package: https://github.com/lovit/soynlp
-"""
 import os
-import sys
+from collections import defaultdict
 
-sys.path.append('/Users/seongminlee/Desktop/SNU/2019Winter/DMLab/KPMG/code/news-trends/src/python')
-
-import gensim
 import numpy as np
 from konlpy import tag
-from soynlp.noun import LRNounExtractor_v2
-from soynlp.tokenizer import MaxScoreTokenizer
 
 from newstrends import utils
 from newstrends.data import mysql
@@ -150,14 +141,12 @@ def related_word_set(words, sim_matrix, words_frequency, threshold=10):
 '''
 
 
-def related_words_with_given_keyword(words, sim_matrix, words_frequency, threshold=10):
+def related_words_with_given_keyword(words, sim_matrix):
     """
     USING SIMILARITY MATRIX
 
     :param words:           List of words(str)
     :param sim_matrix:      sim_matrix[i][j]는 words[i], words[j]가 동시에 등장하는 article 수
-    :param words_frequency: 단어 별 frequency
-    :param threshold:       Threshold to determine whether two words are related or not
 
     :return: dictionary of related keywords containing {WORD}:{WORDS RELATED TO GIVEN KEYWORD}
     """
@@ -177,26 +166,26 @@ def related_words_with_given_keyword(words, sim_matrix, words_frequency, thresho
                         sim_dict[words[i]][-1] = sim_matrix[i][j]
                         num_count = 9
                         while num_count > 0 and \
-                                sim_dict[words[i]][num_count] > sim_dict[words[i]][num_count-1]:
+                                sim_dict[words[i]][num_count] > sim_dict[words[i]][num_count - 1]:
                             temp = sim_dict[words[i]][num_count]
-                            sim_dict[words[i]][num_count] = sim_dict[words[i]][num_count-1]
-                            sim_dict[words[i]][num_count-1] = temp
+                            sim_dict[words[i]][num_count] = sim_dict[words[i]][num_count - 1]
+                            sim_dict[words[i]][num_count - 1] = temp
                             temp = words_dict[words[i]][num_count]
-                            words_dict[words[i]][num_count] = words_dict[words[i]][num_count-1]
-                            words_dict[words[i]][num_count-1] = temp
+                            words_dict[words[i]][num_count] = words_dict[words[i]][num_count - 1]
+                            words_dict[words[i]][num_count - 1] = temp
                             num_count -= 1
                     else:
                         num_count = len(words_dict[words[i]])
                         words_dict[words[i]].append(words[j])
                         sim_dict[words[i]].append(sim_matrix[i][j])
                         while num_count > 0 and \
-                                sim_dict[words[i]][num_count] > sim_dict[words[i]][num_count-1]:
+                                sim_dict[words[i]][num_count] > sim_dict[words[i]][num_count - 1]:
                             temp = sim_dict[words[i]][num_count]
-                            sim_dict[words[i]][num_count] = sim_dict[words[i]][num_count-1]
-                            sim_dict[words[i]][num_count-1] = temp
+                            sim_dict[words[i]][num_count] = sim_dict[words[i]][num_count - 1]
+                            sim_dict[words[i]][num_count - 1] = temp
                             temp = words_dict[words[i]][num_count]
-                            words_dict[words[i]][num_count] = words_dict[words[i]][num_count-1]
-                            words_dict[words[i]][num_count-1] = temp
+                            words_dict[words[i]][num_count] = words_dict[words[i]][num_count - 1]
+                            words_dict[words[i]][num_count - 1] = temp
                             num_count -= 1
                 else:
                     words_dict[words[i]] = [words[j]]
@@ -204,35 +193,27 @@ def related_words_with_given_keyword(words, sim_matrix, words_frequency, thresho
     return words_dict
 
 
-def main():
-    entries = mysql.select_articles(field=['title', 'description'])
-    titles = [e[0] for e in entries]
-    contents = [e[1] for e in entries]
+def run(use_contents=False, min_counts=10):
+    if use_contents:
+        entries = mysql.select_articles(field=['title', 'description'])
+        titles = [e[0] for e in entries]
+        contents = [e[1] for e in entries]
 
-    # num_contents = len(titles)
-    num_contents = 3000
-    titles = titles[:num_contents]
-    contents = contents[:num_contents]
+        parsed_titles = preprocess(parse_by_konlpy(titles))
+        parsed_contents = preprocess(parse_by_konlpy(contents))
+        words_list = [title + content for title, content in zip(parsed_titles, parsed_contents)]
+    else:
+        titles = mysql.select_all_titles(preprocess=False)
+        words_list = preprocess(parse_by_konlpy(titles))
 
-    print('Start Parsing')
-    titles_words_list = preprocess(parse_by_konlpy(titles))
-    contents_words_list = preprocess(parse_by_konlpy(contents))
-    words_list = [title + content for title, content in zip(titles_words_list, contents_words_list)]
-    num_contents = len(words_list)
-
-    ############################## word2vec part ###############################
-    print('Word to Vector')
-    words_all = list(set(w for words in words_list for w in words))
-    words_dict = gensim.models.word2vec.Word2Vec(words_list, size=20, window=10, min_count=10)
-
-    words, vectors = [], []
-    for w in words_all:
-        if w in words_dict:
-            words.append(w)
-            vectors.append(words_dict[w])
+    word_list = [w for words in words_list for w in words]
+    word_counts = defaultdict(lambda: 0)
+    for w in word_list:
+        word_counts[w] += 1
+    words = [w for w in set(word_list) if word_counts[w] >= min_counts]
     words = np.array(words, dtype=str)
-    vectors = np.array(vectors, dtype=np.float32)
 
+    num_contents = len(words_list)
     words_in_articles = np.zeros([words.shape[0], num_contents])
     words_frequency = np.zeros([words.shape[0]])
     sim_matrix = np.zeros([words.shape[0], words.shape[0]])
@@ -246,24 +227,20 @@ def main():
         for w2 in range(sim_matrix.shape[1]):
             sim_matrix[w1][w2] = np.inner(words_in_articles[w1], words_in_articles[w2])
 
-    threshold = num_contents / 50
-    # print('Related word 1')
-    # related_words_dict_1 = related_word_set(words, sim_matrix, words_frequency, threshold)
-
-    related_words_dict_2 = related_words_with_given_keyword(words, sim_matrix, words_frequency, threshold)
-
-    # print('CASE 1')
-    # print_dict(related_words_dict_1)
+    related_words_dict_2 = related_words_with_given_keyword(words, sim_matrix)
 
     print_dict(related_words_dict_2)
 
     out_path = '../../../out'
     os.makedirs(out_path, exist_ok=True)
     np.savetxt(os.path.join(out_path, 'words.tsv'), words, fmt='%s', delimiter='\t')
-    np.savetxt(os.path.join(out_path, 'vectors.tsv'), vectors, delimiter='\t')
     np.savetxt(os.path.join(out_path, 'similarity.tsv'), sim_matrix, delimiter='\t')
 
     ############################################################################
+
+
+def main():
+    run()
 
 
 if __name__ == '__main__':
