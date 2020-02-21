@@ -1,5 +1,6 @@
 import io
 import re
+from collections import defaultdict, Counter
 from datetime import datetime, timedelta
 
 import numpy as np
@@ -184,3 +185,21 @@ def to_keywords(articles):
             title = title.replace(w, '')
         parsed.append([word for word in title.split() if word not in stopwords])
     return parsed
+
+
+def find_popular_keywords(num_words=20, num_days=3):
+    entries = mysql.select_articles(
+        field=['title', 'description', 'date'],
+        date_from=datetime.now() - timedelta(num_days))
+    words_dict = defaultdict(lambda: [])
+    for e in entries:
+        words_dict[e[2].date()].append(e[0])
+
+    data = []
+    for date in sorted(words_dict.keys()):
+        keywords = to_keywords(words_dict[date])
+        keywords = [w for words in keywords for w in words]
+        keywords = Counter(keywords).most_common(num_words)
+        for word, count in keywords:
+            data.append((date, word, count))
+    return pd.DataFrame(data, columns=['date', 'word', 'count'])
