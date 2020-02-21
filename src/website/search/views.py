@@ -6,7 +6,6 @@ from django.views.generic.edit import FormView
 
 from search.models import NewsArticle
 from search.forms import SearchValue
-from newstrends.utils import search_keyword_sentiment, find_popular_keywords
 
 SEARCH_WORD = ""
 
@@ -15,6 +14,8 @@ class Search(TemplateView):
     template_name = 'search/index.html'
 
     def get_context_data(self, *args, **kwargs):
+        from newstrends.utils import find_popular_keywords
+
         context = super().get_context_data(*args, **kwargs)
 
         df = find_popular_keywords()
@@ -25,9 +26,6 @@ class Search(TemplateView):
 
         date1_list = date1_df.to_dict('records')
         date2_list = date2_df.to_dict('records')
-
-        print(date1_df)
-        print(date2_df)
 
         context['date1'] = dates_list[0]
         context['date2'] = dates_list[1]
@@ -54,28 +52,26 @@ class Result(FormView):
     def get_context_data(self, *args, **kwargs):
         context = super(Result, self).get_context_data(*args, **kwargs)
 
-        df = search_keyword_sentiment(SEARCH_WORD)
-        df_list = df.to_dict('records')
-        publishers_list = df.publisher.unique()
+        search_word_len = len(SEARCH_WORD.split(' '))
 
-        context['df'] = df_list
-        context['publishers'] = publishers_list
+        if search_word_len > 2:
+            from newstrends.utils import compute_sentence_polarity
+            polarity = compute_sentence_polarity(SEARCH_WORD)
 
-        return context
+            context['keyword'] = SEARCH_WORD
+            context['type'] = 'polarity'
+            context['left'] = polarity['진보']
+            context['right'] = polarity['보수']
 
-# class Result(TemplateView):
-#     template_name = 'search/result.html'
-#
-#     def get_context_data(self, *args, **kwargs):
-#         context = super().get_context_data(*args, **kwargs)
-#
-#         df = search_keyword_sentiment('추미애')
-#         df_list = df.to_dict('records')
-#         publishers_list = df.publisher.unique()
-#
-#         context['df'] = df_list
-#         context['publishers'] = publishers_list
-#
-#         print(df.iloc[0, :])
-#
-#         return context
+            return context
+        else:
+            from newstrends.utils import search_keyword_sentiment
+            df = search_keyword_sentiment(SEARCH_WORD)
+            df_list = df.to_dict('records')
+            publishers_list = df.publisher.unique()
+
+            context['type'] = 'sentiment'
+            context['df'] = df_list
+            context['publishers'] = publishers_list
+
+            return context
