@@ -37,13 +37,3 @@ def compute_scores(documents):
                      doc.sentiment_scores.negative]
             scores.append(score)
     return np.array(scores)
-
-
-def print_scores(documents, scores):
-    sentiments = ['positive', 'neutral', 'negative']
-    for t, s in zip(documents, scores):
-        scores_str = ', '.join(f'{e:.3f}' for e in s)
-        print(f'Document: {t}')
-        print(f'Sentiment: {sentiments[np.argmax(s)]}')
-        print(f'Scores: ({scores_str})')
-        print()

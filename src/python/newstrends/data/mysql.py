@@ -47,7 +47,7 @@ def select_all_titles(preprocess):
     return titles
 
 
-def select_articles(field=None, publishers=None):
+def select_articles(field=None, publishers=None, date_from=None):
     if field is None:
         field_str = '*'
     elif isinstance(field, list):
@@ -56,9 +56,16 @@ def select_articles(field=None, publishers=None):
         field_str = field
 
     sql = f'select {field_str} from news'
+
+    if publishers is not None or date_from is not None:
+        sql += ' where'
+
     if publishers is not None:
-        pub_str = ', '.join(f'\'{e}\'' for e in publishers)
-        sql += f' where publisher in ({pub_str})'
+        sql += ' publisher in ({})'.format(
+            ', '.join(f'\'{e}\'' for e in publishers))
+
+    if date_from is not None:
+        sql += ' date >= "{}"'.format(date_from.strftime('%Y-%m-%d'))
 
     entries = get_engine().execute(sql)
     if isinstance(field, str):
