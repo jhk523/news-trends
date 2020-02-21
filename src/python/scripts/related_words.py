@@ -163,15 +163,44 @@ def related_words_with_given_keyword(words, sim_matrix, words_frequency, thresho
     """
     num_words = len(words)
     words_dict = dict()
+    sim_dict = dict()
 
     for i in range(num_words):
         for j in range(num_words):
-            if i != j and sim_matrix[i][j] > threshold and \
-                    sim_matrix[i][j] > min(words_frequency[i], words_frequency[j]) * 0.5:
+            if i != j and sim_matrix[i][j] > 10:
                 if words[i] in words_dict.keys():
-                    words_dict[words[i]].append(words[j])
+                    num_count = len(words_dict[words[i]])
+                    if num_count >= 10 and sim_dict[words[i]][-1] > sim_matrix[i][j]:
+                        continue
+                    elif num_count >= 10:
+                        words_dict[words[i]][-1] = words[j]
+                        sim_dict[words[i]][-1] = sim_matrix[i][j]
+                        num_count = 9
+                        while num_count > 0 and \
+                                sim_dict[words[i]][num_count] > sim_dict[words[i]][num_count-1]:
+                            temp = sim_dict[words[i]][num_count]
+                            sim_dict[words[i]][num_count] = sim_dict[words[i]][num_count-1]
+                            sim_dict[words[i]][num_count-1] = temp
+                            temp = words_dict[words[i]][num_count]
+                            words_dict[words[i]][num_count] = words_dict[words[i]][num_count-1]
+                            words_dict[words[i]][num_count-1] = temp
+                            num_count -= 1
+                    else:
+                        num_count = len(words_dict[words[i]])
+                        words_dict[words[i]].append(words[j])
+                        sim_dict[words[i]].append(sim_matrix[i][j])
+                        while num_count > 0 and \
+                                sim_dict[words[i]][num_count] > sim_dict[words[i]][num_count-1]:
+                            temp = sim_dict[words[i]][num_count]
+                            sim_dict[words[i]][num_count] = sim_dict[words[i]][num_count-1]
+                            sim_dict[words[i]][num_count-1] = temp
+                            temp = words_dict[words[i]][num_count]
+                            words_dict[words[i]][num_count] = words_dict[words[i]][num_count-1]
+                            words_dict[words[i]][num_count-1] = temp
+                            num_count -= 1
                 else:
                     words_dict[words[i]] = [words[j]]
+                    sim_dict[words[i]] = [sim_matrix[i][j]]
     return words_dict
 
 
@@ -181,7 +210,7 @@ def main():
     contents = [e[1] for e in entries]
 
     # num_contents = len(titles)
-    num_contents = 1000
+    num_contents = 3000
     titles = titles[:num_contents]
     contents = contents[:num_contents]
 
