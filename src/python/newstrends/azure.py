@@ -2,6 +2,7 @@
 pip install azure-ai-textanalytics 로 패키지 설치 후 사용
 """
 import json
+import multiprocessing
 import os
 
 import numpy as np
@@ -22,18 +23,22 @@ def load_client():
     return _CLIENT
 
 
-def compute_scores(documents):
-    max_queries = 1000
+def send_query(documents):
     scores = []
-    while len(scores) < len(documents):
-        index = len(scores)
-        docs = documents[index:index + max_queries]
-        response = load_client().analyze_sentiment(docs, language='kor')
-        for doc in response:
-            if doc.is_error:
-                raise ValueError(doc)
-            score = [doc.sentiment_scores.positive,
-                     doc.sentiment_scores.neutral,
-                     doc.sentiment_scores.negative]
-            scores.append(score)
-    return np.array(scores)
+    response = load_client().analyze_sentiment(documents, language='kor')
+    for doc in response:
+        if doc.is_error:
+            raise ValueError(doc)
+        score = [doc.sentiment_scores.positive,
+                 doc.sentiment_scores.neutral,
+                 doc.sentiment_scores.negative]
+        scores.append(score)
+    return scores
+
+
+def compute_scores(documents, max_records=1000):
+    documents_split = []
+    for i in range(0, len(documents), max_records):
+        documents_split.append(documents[i:i + max_records])
+    scores_list = multiprocessing.Pool().map(send_query, documents_split)
+    return np.array([e for s in scores_list for e in s])
