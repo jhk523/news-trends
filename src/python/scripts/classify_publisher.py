@@ -52,8 +52,11 @@ def read_labels_as_tensor(path, label_map):
 
 def print_predictions(model, loader, titles):
     model.eval()
+    device = utils.to_device()
     count = 0
     for x, y in loader:
+        x = x.to(device)
+        y = y.to(device)
         y_pred = torch.softmax(model(x), dim=1)
         for i in range(x.size(0)):
             pred_str = ', '.join(f'{e * 100:.1f}' for e in y_pred[i])
@@ -98,8 +101,10 @@ def main():
 
     vocab_size = len(vocabulary)
     num_classes = 2
-    embedding_dim = 8
+    embedding_dim = 10
     batch_size = 256
+    loader = DataLoader(
+        TensorDataset(features, labels), batch_size, shuffle=True)
 
     device = utils.to_device()
     cls_model = models.RNNClassifier(
@@ -108,8 +113,6 @@ def main():
 
     if not os.path.exists(cls_path):
         os.makedirs(os.path.dirname(cls_path), exist_ok=True)
-        loader = DataLoader(
-            TensorDataset(features, labels), batch_size, shuffle=True)
         utils.train_model(
             cls_model, loader, lr=1e-4, num_epochs=1500, print_every=100, patience=100)
         torch.save(cls_model.state_dict(), cls_path)
@@ -118,8 +121,8 @@ def main():
 
     title_path = f'{out_path}/train/titles.tsv'
     titles = [e.strip() for e in open(title_path).readlines()]
-    # print_predictions(cls_model, loader, titles)
-    start_interactive_session(cls_model, spm_model, vocabulary)
+    print_predictions(cls_model, loader, titles)
+    # start_interactive_session(cls_model, spm_model, vocabulary)
 
 
 if __name__ == '__main__':
