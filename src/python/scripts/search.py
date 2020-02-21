@@ -32,7 +32,7 @@ def main():
     df['polarity'] = np.maximum(scores[:, 0], scores[:, 2])
 
     for pub, df_ in df.groupby(by='publisher'):
-        avg_score = df_[['pos_score', 'neu_score', 'neg_score']].mean(axis=0)
+        avg_score = df_[['pos_score', 'neu_score', 'neg_score']].values.mean(axis=0)
         print(f'Publisher: {pub}')
         print('Overall sentiment: {} ({})'.format(
             sentiments[np.argmax(avg_score)],
