@@ -69,11 +69,13 @@ def print_predictions(model, loader, titles):
 
 
 def start_interactive_session(model, spm_model, unique_pieces):
+    device = utils.to_device()
     while True:
         print('Sentence:', end=' ')
         sentence = input()
         pieces = spm_model.encode_as_pieces(sentence)
-        matrix = utils.to_multi_hot_matrix([pieces], unique_pieces)
+        matrix = utils.to_integer_matrix([pieces], unique_pieces).to(device)
+        # matrix = utils.to_multi_hot_matrix([pieces], unique_pieces).to(device)
         y_pred = torch.softmax(model(matrix), dim=1)
 
         pred_str = ', '.join(f'{e * 100:.1f}' for e in y_pred[0])
@@ -82,21 +84,39 @@ def start_interactive_session(model, spm_model, unique_pieces):
 
 
 def main():
-    spm_model = utils.load_spm(path='../out/spm/model/spm.model')
-    save_as_pieces(spm_model, path='../out/spm/train')
+    out_path = '../../out'
+    spm_model = utils.load_spm(path=f'{out_path}/spm/spm.model')
+    save_as_pieces(spm_model, path=f'{out_path}/train')
 
-    pieces = read_pieces('../out/spm/train/pieces.tsv')
+    pieces = read_pieces(f'{out_path}/train/pieces.tsv')
     vocabulary = list(set(p for pp in pieces for p in pp))
-    features = utils.to_multi_hot_matrix(pieces, vocabulary)
-    labels = read_labels_as_tensor('../out/spm/train/labels.tsv')
+    # features = utils.to_multi_hot_matrix(pieces, vocabulary)
+    features = utils.to_integer_matrix(pieces, vocabulary)
+    labels = read_labels_as_tensor(f'{out_path}/train/labels.tsv')
 
-    cls_model = models.SoftmaxClassifier(vocab_size=len(vocabulary), num_classes=2)
-    loader = DataLoader(TensorDataset(features, labels), batch_size=256, shuffle=True)
-    utils.train_model(cls_model, loader, lr=1e-4, print_every=100)
+    vocab_size = len(vocabulary)
+    num_classes = 2
+    embedding_dim = 6
+    batch_size = 256
 
-    title_path = '../out/spm/train/titles.tsv'
+    device = utils.to_device()
+    cls_model = models.RNNClassifier(
+        vocab_size, num_classes, embedding_dim).to(device)
+    cls_path = f'{out_path}/pub/model.pth'
+
+    if not os.path.exists(cls_path):
+        os.makedirs(os.path.dirname(cls_path), exist_ok=True)
+        loader = DataLoader(
+            TensorDataset(features, labels), batch_size, shuffle=True)
+        utils.train_model(
+            cls_model, loader, lr=1e-4, num_epochs=1000, print_every=100)
+        torch.save(cls_model.state_dict(), cls_path)
+    else:
+        cls_model.load_state_dict(torch.load(cls_path))
+
+    title_path = f'{out_path}/train/titles.tsv'
     titles = [e.strip() for e in open(title_path).readlines()]
-    print_predictions(cls_model, loader, titles)
+    # print_predictions(cls_model, loader, titles)
     start_interactive_session(cls_model, spm_model, vocabulary)
 
 

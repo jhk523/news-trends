@@ -21,17 +21,6 @@ def search_keyword(keyword):
     return pd.DataFrame(searched, columns=field)
 
 
-def print_scores(df, scores):
-    sentiments = ['positive', 'neutral', 'negative']
-    for (_, row), score in zip(df.iterrows(), scores):
-        print('Document: {}'.format(row['title']))
-        print('Date: {}'.format(row['date'].strftime('%Y/%m/%d')))
-        print('Publisher: {}'.format(row['publisher']))
-        print('Sentiment: {}'.format(sentiments[np.argmax(score)]))
-        print('Scores: ({})'.format(', '.join(f'{e:.3f}' for e in score)))
-        print()
-
-
 def main():
     keyword = '코로나'
     sentiments = ['positive', 'neutral', 'negative']

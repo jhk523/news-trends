@@ -81,7 +81,7 @@ def to_multi_hot_matrix(pieces, vocabulary=None):
 
 
 def train_model(model, loader, num_epochs=1000, lr=1e-3, print_every=1,
-                patience=10):
+                patience=0):
     loss_func = nn.CrossEntropyLoss()
     opt_module = optim.Adam(model.parameters(), lr)
     device = to_device()
@@ -112,7 +112,7 @@ def train_model(model, loader, num_epochs=1000, lr=1e-3, print_every=1,
             saved_model = io.BytesIO()
             torch.save(model.state_dict(), saved_model)
 
-        if epoch >= best_epoch + patience:
+        if patience > 0 and epoch >= best_epoch + patience:
             break
 
     saved_model.seek(0)
