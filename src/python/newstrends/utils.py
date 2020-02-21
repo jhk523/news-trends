@@ -158,7 +158,10 @@ def search_keywords_as_dataframe(*keywords, num_days='all', ignore_time=True):
 
 
 def search_keyword_sentiment(keyword):
-    df = search_keywords_as_dataframe(keyword, num_days=7)
+    keywords = [keyword, keyword.replace(' ', '')]
+    df = search_keywords_as_dataframe(*keywords, num_days=7)
+    if df.empty:
+        return None
     scores = azure.compute_scores(df['title'])
     df['pos_score'] = scores[:, 0]
     df['neu_score'] = scores[:, 1]
