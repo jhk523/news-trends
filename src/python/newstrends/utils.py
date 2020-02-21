@@ -205,3 +205,7 @@ def find_popular_keywords(num_words=20, num_days=3):
         for word, count in keywords:
             data.append((date, word, count))
     return pd.DataFrame(data, columns=['date', 'word', 'count'])
+
+
+def compute_sentence_polarity(sentence):
+    return dict(보수=0.6, 진보=0.4)
