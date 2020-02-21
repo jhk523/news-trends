@@ -167,3 +167,20 @@ def search_keyword_sentiment(keyword):
     df['neu_score'] = scores[:, 1]
     df['neg_score'] = scores[:, 2]
     return df
+
+
+def to_keywords(articles):
+    stopwords = [
+        '&#039;', '&quot;', '<span>', '</span>', '<span id="divTitle">', '<b>',
+        '</font>', '</b>', '포토', '없는', '것인가', '[포토]', '속보', '[속보]', '첫',
+        '등', '중', '수', '외', '전', '내', '것', '만에', '더', '논란', '·', '발표',
+        '안', '후', '출시', '위한', 'ET투자뉴스', '\u200b']
+
+    parsed = []
+    for title in articles:
+        for w in [',', "','", '[', ']', '(', ')']:
+            title = title.replace(w, ' ')
+        for w in ["'", '"', "'", '‘', '’']:
+            title = title.replace(w, '')
+        parsed.append([word for word in title.split() if word not in stopwords])
+    return parsed
