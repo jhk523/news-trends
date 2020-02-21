@@ -19,9 +19,9 @@
 <body>
 <div class="container">
     <h1 id="title">전국뉴스자랑</h1>
-    <form method="post" action="/result/">
+    <form autocomplete="off" method="post" action="/result/">
         {% csrf_token %}
-        <input type="text" name="search_value" placeholder="Search..." value="{{ search_value }}">
+        <input autocomplete="off" type="text" name="search_value" placeholder="Search..." value="{{ search_value }}">
         <input type="submit" style="display: none" id="submit">
         <div class="search"></div>
     </form>

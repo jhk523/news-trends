@@ -6,7 +6,7 @@ from django.views.generic.edit import FormView
 
 from search.models import NewsArticle
 from search.forms import SearchValue
-from newstrends.utils import search_keyword_sentiment
+from newstrends.utils import search_keyword_sentiment, find_popular_keywords
 
 SEARCH_WORD = ""
 
@@ -17,52 +17,51 @@ class Search(TemplateView):
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
 
-        news_articles = NewsArticle.objects.first()
-
-        context['news_articles'] = news_articles
+        # df = find_popular_keywords()
+        # print(df)
 
         return context
 
 
-# class Result(FormView):
-#     template_name = 'search/result.html'
-#     form_class = SearchValue
-#     success_url = '/result/'
-#
-#     def __init__(self, **kwargs):
-#         super().__init__(**kwargs)
-#
-#     def form_valid(self, form):
-#         global SEARCH_WORD
-#
-#         SEARCH_WORD = form.cleaned_data['search_value']
-#         return super(Result, self).form_valid(form)
-#
-#     def get_context_data(self, *args, **kwargs):
-#         context = super(Result, self).get_context_data(*args, **kwargs)
-#
-#         df = search_keyword_sentiment(SEARCH_WORD)
-#         df_list = df.to_dict('records')
-#         publishers_list = df.publisher.unique()
-#
-#         context['df'] = df_list
-#         context['publishers'] = publishers_list
-#
-#         return context
-
-class Result(TemplateView):
+class Result(FormView):
     template_name = 'search/result.html'
+    form_class = SearchValue
+    success_url = '/result/'
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def form_valid(self, form):
+        global SEARCH_WORD
+
+        SEARCH_WORD = form.cleaned_data['search_value']
+        return super(Result, self).form_valid(form)
 
     def get_context_data(self, *args, **kwargs):
-        context = super().get_context_data(*args, **kwargs)
+        context = super(Result, self).get_context_data(*args, **kwargs)
 
-        df = search_keyword_sentiment('추미애')
+        df = search_keyword_sentiment(SEARCH_WORD)
         df_list = df.to_dict('records')
         publishers_list = df.publisher.unique()
 
         context['df'] = df_list
         context['publishers'] = publishers_list
 
-        print(df.iloc[0, :])
-
         return context
+
+# class Result(TemplateView):
+#     template_name = 'search/result.html'
+#
+#     def get_context_data(self, *args, **kwargs):
+#         context = super().get_context_data(*args, **kwargs)
+#
+#         df = search_keyword_sentiment('추미애')
+#         df_list = df.to_dict('records')
+#         publishers_list = df.publisher.unique()
+#
+#         context['df'] = df_list
+#         context['publishers'] = publishers_list
+#
+#         print(df.iloc[0, :])
+#
+#         return context
