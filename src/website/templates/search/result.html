@@ -18,9 +18,7 @@
 </head>
 <body>
 <div class="container">
-    <h1 id="title">News Title</h1>
-    <input type="text" placeholder="Search...">
-    <div class="search"></div>
+    {{ df.title }}
 </div>
 
 <!-- Optional JavaScript -->
@@ -29,17 +27,5 @@
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
 
-<script>
-$(function() {
-    $("input").keypress(function (e) {
-        if ((e.which && e.which == 13) || (e.keyCode && e.keyCode == 13)) {
-            $('button[type=submit] .default').click();
-            return false;
-        } else {
-            return true;
-        }
-    });
-});
-</script>
 </body>
 </html>
