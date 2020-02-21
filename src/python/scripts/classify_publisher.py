@@ -80,7 +80,6 @@ def start_interactive_session(model, spm_model, unique_pieces):
             continue
         pieces = spm_model.encode_as_pieces(sentence)
         matrix = utils.to_integer_matrix([pieces], unique_pieces).to(device)
-        # matrix = utils.to_multi_hot_matrix([pieces], unique_pieces).to(device)
         y_pred = torch.softmax(model(matrix), dim=1)
 
         pred_str = ', '.join(f'{e * 100:.1f}' for e in y_pred[0])
@@ -92,14 +91,14 @@ def main():
     publishers = ['조선일보', '경향신문', '한겨례']
     out_path = '../../out'
     spm_model = utils.load_spm(path=f'{out_path}/spm/spm.model')
-    save_as_pieces(spm_model, path=f'{out_path}/train', publishers=publishers)
+
+    if not os.path.exists(f'{out_path}/train'):
+        save_as_pieces(spm_model, path=f'{out_path}/train', publishers=publishers)
 
     label_map = dict(조선일보=0, 경향신문=1, 한겨례=1)
-
     pieces = read_pieces(f'{out_path}/train/pieces.tsv')
     vocabulary = list(set(p for pp in pieces for p in pp))
     features = utils.to_integer_matrix(pieces, vocabulary)
-    # features = utils.to_multi_hot_matrix(pieces, vocabulary)
     labels = read_labels_as_tensor(f'{out_path}/train/labels.tsv', label_map)
 
     vocab_size = len(vocabulary)
