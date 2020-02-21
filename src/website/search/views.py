@@ -48,12 +48,3 @@ class Result(FormView):
         context['df'] = df_list[0]
 
         return context
-
-    # def post(self, request, *args, **kwargs):
-    #     search_value = request.POST.get('search_value')
-    #     SearchValue.save()
-    #     error = ""
-    #     if not self.search_value:
-    #         error = "error message"
-    #     return render(request, self.template_name, {'search_value': search_value,
-    #                                                 'error': error})
