@@ -1,10 +1,14 @@
 import io
 import re
+from datetime import datetime, timedelta
 
 import numpy as np
+import pandas as pd
 import sentencepiece as spm
 import torch
 from torch import nn, optim
+
+from newstrends.data import mysql
 
 
 def preprocess(articles):
@@ -124,3 +128,23 @@ def to_device():
         return torch.device('cuda')
     else:
         return torch.device('cpu')
+
+
+def search_keyword(keyword, num_days='all', ignore_time=True):
+    field = ['title', 'date', 'publisher']
+    date_from = None
+    if isinstance(num_days, int):
+        date_from = datetime.now() - timedelta(days=num_days)
+    entities = mysql.select_articles(field, date_from=date_from)
+    titles = preprocess([e[0] for e in entities])
+    others = [e[1:] for e in entities]
+
+    searched = []
+    for title, entry in zip(titles, others):
+        if title.find(keyword) >= 0:
+            searched.append((title, *entry))
+    df = pd.DataFrame(searched, columns=field)
+
+    if ignore_time:
+        df['date'] = df['date'].apply(lambda x: x.replace(hour=0, minute=0, second=0))
+    return df

@@ -1,30 +1,12 @@
-from datetime import timedelta, datetime
-
 import numpy as np
-import pandas as pd
 
 from newstrends import azure, utils
-from newstrends.data import mysql
-
-
-def search_keyword(keyword):
-    field = ['title', 'date', 'publisher']
-    date_from = datetime.now() - timedelta(days=7)
-    entities = mysql.select_articles(field, date_from=date_from)
-    titles = utils.preprocess([e[0] for e in entities])
-    others = [(e[1].replace(hour=0, minute=0, second=0), e[2]) for e in entities]
-
-    searched = []
-    for title, entry in zip(titles, others):
-        if title.find(keyword) >= 0:
-            searched.append((title, *entry))
-    return pd.DataFrame(searched, columns=field)
 
 
 def main():
     keyword = '코로나'
     sentiments = ['positive', 'neutral', 'negative']
-    df = search_keyword(keyword)
+    df = utils.search_keyword(keyword, num_days=7)
     scores = azure.compute_scores(df['title'])
     df['pos_score'] = scores[:, 0]
     df['neu_score'] = scores[:, 1]
