@@ -10,16 +10,41 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
 
-    <title>Hello, world!</title>
+    <title>전국뉴스자랑</title>
 
     <link href="https://fonts.googleapis.com/css?family=Nanum+Gothic&display=swap" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="{% static 'css/index.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'css/result.css' %}" />
 
 </head>
 <body>
 <div class="container">
-    {{ df.title }}
-<!--    {{ search }}-->
+    {% for publisher in publishers %}
+        <div class="publisher-div">
+            <div class="w-100 publisher-name">{{ publisher }}</div>
+            <div class="row titles">
+                <div class="col-2">Date</div>
+                <div class="col-1">Sentiment</div>
+                <div class="col-1">Pos.</div>
+                <div class="col-1">Neu.</div>
+                <div class="col-1">Neg.</div>
+                <div class="col-6">Title</div>
+            </div>
+            <div class="row articles">
+                {% for news_article in df %}
+                    {% if news_article.publisher == publisher %}
+                        <div class="col-2 article-title">{{ news_article.date | date:'Y-m-d' }}</div>
+                        <div class="col-1 article-title">{{ news_article.sentiment }}</div>
+                        <div class="col-1 article-title">{{ news_article.pos_score }}</div>
+                        <div class="col-1 article-title">{{ news_article.neu_score }}</div>
+                        <div class="col-1 article-title">{{ news_article.neg_score }}</div>
+                        <div class="col-6 article-title">{{ news_article.title }}</div>
+                    {% endif %}
+                {% endfor %}
+                <div class="article-last"></div>
+            </div>
+        </div>
+    {% endfor %}
+    <div class="last"></div>
 </div>
 
 <!-- Optional JavaScript -->
