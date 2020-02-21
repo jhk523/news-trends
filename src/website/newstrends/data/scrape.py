@@ -58,7 +58,8 @@ URLS = {'조선일보': ['http://www.chosun.com/site/data/rss/rss.xml'],
                  'http://fs.jtbc.joins.com/RSS/international.xml',
                  'http://fs.jtbc.joins.com/RSS/culture.xml',
                  'http://fs.jtbc.joins.com/RSS/entertainment.xml',
-                 'http://fs.jtbc.joins.com/RSS/sports.xml']
+                 'http://fs.jtbc.joins.com/RSS/sports.xml'],
+        '매일노동뉴스': ['http://www.labortoday.co.kr/rss/allArticle.xml']
         }
 HEADERS = {
     'X-Requested-With': 'XMLHttpRequest',
