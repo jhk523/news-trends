@@ -14,9 +14,9 @@ def save_strings(path, name, data):
     np.savetxt(os.path.join(path, name), data, fmt='%s')
 
 
-def save_as_pieces(model, path):
+def save_as_pieces(model, path, publishers):
     entries = mysql.select_articles(
-        field=['title', 'publisher'], publishers=['조선일보', '경향신문', '한겨례'])
+        field=['title', 'publisher'], publishers=publishers)
     titles = [e[0] for e in entries]
     titles = utils.preprocess(titles)
     publishers = [e[1] for e in entries]
@@ -50,10 +50,11 @@ def read_labels_as_tensor(path, label_map):
     return torch.tensor(labels)
 
 
-def print_predictions(model, loader, titles):
+def print_predictions(model, loader, titles, path):
     model.eval()
     device = utils.to_device()
     count = 0
+    f = open(path, 'w')
     for x, y in loader:
         x = x.to(device)
         y = y.to(device)
@@ -61,11 +62,12 @@ def print_predictions(model, loader, titles):
         for i in range(x.size(0)):
             pred_str = ', '.join(f'{e * 100:.1f}' for e in y_pred[i])
             label = '조선일보' if y[i] == 0 else '한겨레경향'
-            print(f'Title: {titles[count]}')
-            print(f'Prediction: ({pred_str})')
-            print(f'True label: ({label})')
-            print()
+            f.write(f'Title: {titles[count]}\n')
+            f.write(f'Prediction: ({pred_str})\n')
+            f.write(f'True label: ({label})\n')
+            f.write('\n')
             count += 1
+    f.close()
 
 
 def start_interactive_session(model, spm_model, unique_pieces):
@@ -87,9 +89,10 @@ def start_interactive_session(model, spm_model, unique_pieces):
 
 
 def main():
+    publishers = ['조선일보', '경향신문', '한겨례']
     out_path = '../../out'
     spm_model = utils.load_spm(path=f'{out_path}/spm/spm.model')
-    save_as_pieces(spm_model, path=f'{out_path}/train')
+    save_as_pieces(spm_model, path=f'{out_path}/train', publishers=publishers)
 
     label_map = dict(조선일보=0, 경향신문=1, 한겨례=1)
 
@@ -116,13 +119,14 @@ def main():
         utils.train_model(
             cls_model, loader, lr=1e-4, num_epochs=1500, print_every=100, patience=100)
         torch.save(cls_model.state_dict(), cls_path)
+
+        title_path = f'{out_path}/train/titles.tsv'
+        titles = [e.strip() for e in open(title_path).readlines()]
+        print_predictions(cls_model, loader, titles, f'{out_path}/train/predictions.txt')
     else:
         cls_model.load_state_dict(torch.load(cls_path))
 
-    title_path = f'{out_path}/train/titles.tsv'
-    titles = [e.strip() for e in open(title_path).readlines()]
-    print_predictions(cls_model, loader, titles)
-    # start_interactive_session(cls_model, spm_model, vocabulary)
+    start_interactive_session(cls_model, spm_model, vocabulary)
 
 
 if __name__ == '__main__':
