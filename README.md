@@ -1,28 +1,55 @@
-# News Trends Project
+# 언론사 편향성을 고려한 뉴스 트렌드 분석 시스템
 
-This is the GitHub repository of team Seagram.
+본 코드 저장소는 KPMG Ideathon에 참가한 씨그램(Seagram) 팀의 작업 공간입니다.
 
-## Members
+## 개요
 
-- Jaemin Yoo (leader, jaeminyoo@snu.ac.kr)
-- Minyong Cho (chominyong@gmail.com)
-- Jung hoon Kim (joseph.junghoon.kim@gmail.com)
-- Seong Min Lee (ligi214@snu.ac.kr)
+뉴스 트렌드를 파악하는 것은 모든 기업 및 기관에서 중요한 문제입니다. 그러나, 현재까지 개발된 뉴스 트렌드
+분석 서비스는 한국의 언론사 편향성을 고려하지 않는다는 문제점을 가지고 있습니다. 예를 들어 대표적인 국내
+언론사인 조선일보와 한겨레는 동일한 사건에 대해 전혀 다른 방향으로 보도하는 경우가 많습니다. 다음 예제는
+2020년 2월 21일에 네이버 메인에 올라온, 코로나 19 바이러스와 문재인 대통령에 대한 두 언론사의 기사를
+가져 온 것입니다. 이러한 편항성을 고려하지 않는다면 대중과 언론의 생각을 잘못 파악할 가능성이 높습니다.
+- **조선일보:** 대통령 부부, 이시국에 '파안대소'… 일부 네티즌 비판
+- **한겨레:** 문 대통령 “상황 엄중, 빠르고 강력한 대책 시행”
+ 
+우리는 본 프로젝트에서 언론사 편향성을 고려하는 새로운 뉴스 트렌드 분석 시스템을 제안하고, 이를 홈페이지
+형태로 구현한 프로토타입을 제작합니다. 본 시스템이 지원하는 기능은 다음과 같습니다.
+- 입력한 키워드에 대해 각 언론사의 긍정/부정 반응도 계산하기
+- 입력한 키워드에 대한 각 언론사의 향후 트렌드 예측하기
+- 입력한 (임의의) 문장에 대한 언론사 편향성 계산하기  
 
-## Overview
+## 기능 설명
 
-This repository consists of two main components:
-- `src/python` contains source codes for data preprocessing or ML models.
-- `src/website` contains source codes for websites.
+본 프로토타입은 뉴스 트렌드를 분석하기 위한 여러 가지 기능을 포함하고 있습니다. 각 기능은 다음과 같은
+기술적 요소로 이루어져 있습니다.
 
-Python 3.6 is recommended, although Python 3.7 seems to work well. The required
-packages are described at `requirements.txt`. All necessary data files such as
-the account information for accessing the MySQL DB should be stored at `data`,
-which is not included in the current repository.  
+### 핫 키워드 탐색
 
-## Usage 
+최근 이슈가 되는 핫 키워드를 탐색하는 기능은 크게 두 가지 요소로 이루어집니다.  
 
-The source codes at `src/python/scripts` are directly executable. For instance,
-you can train a sentencepiece model by running `python -m scripts.spm` at the
-`src/python` directory. Note that `src/python` should be the root directory of
-running the scripts, not `src/python/scripts`, for consistency. 
+## 데이터 정보
+
+본 프로젝트에서 사용하는 데이터는 RSS 서비스를 이용해 각 언론사로부터 직접 수집한 것입니다. 개인 서버에서
+일 분에 한 번 전체 기사의 언론사, 제목, 그리고 요약문을 가져와 MySQL 데이터베이스에 저장합니다. 
+테스트를 마친 후 2월 12일부터 정상적인 스크래핑을 시작하였고 2020년 2월 21일 기준으로 데이터베이스에
+저장된 기사 수는 약 3만 6천 개입니다. 각 기사는 다음과 같은 형식으로 저장됩니다.
+- `2020-02-12 13:44:24`, `조선일보`, `“봉준호 감독 미국서 유명해요?”...봉준호 아들이 들은말`, ...
+
+## 코드 정보
+
+본 코드 저장소는 크게 두 가지 모듈을 담고 있습니다.
+- `src/python`: 데이터 스크래핑, 전처리, 기계 학습 모델 개발 등 전반적인 코드를 저장하고 있습니다.
+- `src/website`: 웹사이트 프로토타입에 대한 코드를 저장하고 있습니다.
+
+Python 3.6 언어를 권장하나 Python 3.7에서도 정상적으로 구동될 수 있습니다. 소스 코드 실행을 위해
+필요한 패키지는 `requirements.txt` 파일에 정리되어 있습니다. MySQL 접속 정보 등 일부 데이터는 본
+저장소에 포함되어 있지 않기 때문에 이러한 데이터를 `data` 폴더에 따로 저장해야 합니다. 
+ 
+## 팀 멤버
+
+본 코드 저장소는 씨그램(Seagram) 팀의 다음 네 명의 멤버가 함께 작성하였습니다.
+
+- 유재민 (leader, jaeminyoo@snu.ac.kr)
+- 김정훈 (joseph.junghoon.kim@gmail.com)
+- 조민용 (chominyong@gmail.com)
+- 이성민 (ligi214@snu.ac.kr)
