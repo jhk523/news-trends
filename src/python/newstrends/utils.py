@@ -153,7 +153,7 @@ def search_keywords_as_dataframe(*keywords, num_days='all', ignore_time=True):
     df = pd.DataFrame(searched, columns=field)
 
     if ignore_time:
-        df['date'] = df['date'].apply(lambda x: x.replace(hour=0, minute=0, second=0))
+        df['date'] = df['date'].apply(lambda x: x.date())
 
     return df
 
