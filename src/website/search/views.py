@@ -17,8 +17,22 @@ class Search(TemplateView):
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
 
-        # df = find_popular_keywords()
-        # print(df)
+        df = find_popular_keywords()
+        dates_list = df.date.unique()
+
+        date1_df = df[df['date'] == dates_list[0]]
+        date2_df = df[df['date'] == dates_list[1]]
+
+        date1_list = date1_df.to_dict('records')
+        date2_list = date2_df.to_dict('records')
+
+        print(date1_df)
+        print(date2_df)
+
+        context['date1'] = dates_list[0]
+        context['date2'] = dates_list[1]
+        context['date1_list'] = date1_list
+        context['date2_list'] = date2_list
 
         return context
 

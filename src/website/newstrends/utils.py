@@ -189,7 +189,7 @@ def to_keywords(articles):
     return parsed
 
 
-def find_popular_keywords(num_words=20, num_days=2):
+def find_popular_keywords(num_words=20, num_days=1):
     entries = mysql.select_articles(
         field=['title', 'description', 'date'],
         date_from=datetime.now() - timedelta(num_days))
