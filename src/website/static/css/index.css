@@ -151,19 +151,36 @@ body {
 
 /* Hot-keyworkds */
 .hot-keyword{
-  border-style: solid;
-  border-color: black;
-  border-width: 1px;
+  /*border-style: solid;*/
+  /*border-color: black;*/
+  /*border-width: 1px;*/
+  color: #4d4d4d;
 }
 
 .dates{
+  margin-top: 10px;
+  margin-bottom: 10px;
   text-align: center;
+  font-size: 30px;
+  border-bottom: #818181 solid 1px;
+  padding-bottom: 10px;
+}
+#date-1{
+  background-color: #ACE7D1;
+}
+#date-2{
+  background-color: #FFAEA9;
 }
 
 .rank{
   margin-left: 0 !important;
   margin-right: 0 !important;
-
+}
+.rank-names{
+  font-size: 20px;
+}
+.rank-values{
+  font-size: 17px;
 }
 .rank-rank, .rank-count{
   text-align: right;

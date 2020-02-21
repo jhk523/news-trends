@@ -30,37 +30,41 @@
     <div class="publisher-div-top"></div>
     <div class="row">
         <div class="col-1"></div>
-        <div class="col-sm-12 col-md-4 hot-keyword">
+
+        <div class="col-sm-12 col-md-4 hot-keyword" id="date-1">
             <div class="dates">{{ date1 }}</div>
-            <div class="row rank">
+            <div class="row rank rank-names">
                 <div class="col-3 rank-rank">랭크</div>
                 <div class="col-5 rank-keyword">키워드</div>
                 <div class="col-3 rank-count">검색수</div>
             </div>
             {% for keyword in date1_list %}
-                <div class="row rank">
+                <div class="row rank rank-values">
                     <div class="col-3 rank-rank">{{ forloop.counter0 | add:1 }}</div>
                     <div class="col-5">{{ keyword.word }}</div>
                     <div class="col-3 rank-count">{{ keyword.count }}</div>
                 </div>
             {% endfor %}
         </div>
+
         <div class="col-2"></div>
-        <div class="col-sm-12 col-md-4 hot-keyword">
+
+        <div class="col-sm-12 col-md-4 hot-keyword" id="date-2">
             <div class="dates">{{ date2 }}</div>
-            <div class="row rank">
+            <div class="row rank rank-names">
                 <div class="col-3 rank-rank">랭크</div>
                 <div class="col-5 rank-keyword">키워드</div>
                 <div class="col-3 rank-count">검색수</div>
             </div>
             {% for keyword in date2_list %}
-                 <div class="row rank">
+                 <div class="row rank rank-values">
                     <div class="col-3 rank-rank">{{ forloop.counter0 | add:1 }}</div>
                     <div class="col-5">{{ keyword.word }}</div>
                     <div class="col-3 rank-count">{{ keyword.count }}</div>
                 </div>
             {% endfor %}
         </div>
+
         <div class="col-1"></div>
     </div>
     <div class="last"></div>
