@@ -131,7 +131,7 @@ def to_device():
         return torch.device('cpu')
 
 
-def search_keyword_as_dataframe(keyword, num_days='all', ignore_time=True):
+def search_keywords_as_dataframe(*keywords, num_days='all', ignore_time=True):
     field = ['title', 'date', 'publisher']
     date_from = None
     if isinstance(num_days, int):
@@ -142,17 +142,23 @@ def search_keyword_as_dataframe(keyword, num_days='all', ignore_time=True):
 
     searched = []
     for title, entry in zip(titles, others):
-        if title.find(keyword) >= 0:
+        found = False
+        for keyword in keywords:
+            if title.find(keyword) >= 0:
+                found = True
+                break
+        if found:
             searched.append((title, *entry))
     df = pd.DataFrame(searched, columns=field)
 
     if ignore_time:
         df['date'] = df['date'].apply(lambda x: x.replace(hour=0, minute=0, second=0))
+
     return df
 
 
 def search_keyword_sentiment(keyword):
-    df = search_keyword_as_dataframe(keyword, num_days=7)
+    df = search_keywords_as_dataframe(keyword, num_days=7)
     scores = azure.compute_scores(df['title'])
     df['pos_score'] = scores[:, 0]
     df['neu_score'] = scores[:, 1]
