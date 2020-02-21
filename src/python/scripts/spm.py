@@ -3,7 +3,6 @@ import os
 import numpy as np
 import sentencepiece as spm
 
-from newstrends import utils
 from newstrends.data import mysql
 
 
@@ -22,17 +21,16 @@ def train_spm(title_path, model_path,
 
 
 def write_articles(articles, path):
-    articles = utils.preprocess(articles)
     articles = np.array(articles, dtype=str)
     np.savetxt(path, articles, fmt='%s')
 
 
 def main():
-    out_path = '../out/spm'
+    out_path = '../../out/spm'
     os.makedirs(out_path, exist_ok=True)
 
     title_path = os.path.join(out_path, 'titles.txt')
-    all_titles = mysql.select_all_titles()
+    all_titles = mysql.select_all_titles(preprocess=True)
     write_articles(all_titles, title_path)
 
     model_path = os.path.join(out_path, 'spm.model')

@@ -19,6 +19,10 @@ pymysql.install_as_MySQLdb()
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ROOT_DIR = os.path.abspath((__file__ + "/../../../../../"))
+TEMPLATES_DIR = os.path.join(os.path.abspath((__file__ + "/../../../")))
+
+TEMPLATES_FILE = os.path.join(TEMPLATES_DIR, 'templates')
+STATIC_DIR = os.path.join(TEMPLATES_DIR, 'static')
 
 SECRET_INFO_DIR = os.path.join(ROOT_DIR, 'data', 'web_secret.json')
 DB_INFO_DIR = os.path.join(ROOT_DIR, 'data', 'db_info.json')
@@ -45,6 +49,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'search.apps.SearchConfig'
 ]
 
 MIDDLEWARE = [
@@ -62,7 +67,7 @@ ROOT_URLCONF = 'website.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [TEMPLATES_FILE],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -132,3 +137,6 @@ USE_THOUSAND_SEPARATOR = True
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
 STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    os.path.join(TEMPLATES_DIR, 'static'),
+]

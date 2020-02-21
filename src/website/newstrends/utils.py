@@ -1,6 +1,5 @@
 import io
 import re
-from collections import defaultdict, Counter
 from datetime import datetime, timedelta
 
 import numpy as np
@@ -164,44 +163,7 @@ def search_keyword_sentiment(keyword):
     if df.empty:
         return None
     scores = azure.compute_scores(df['title'])
-    sentiments = np.array(['긍정적', '중립적', '부정적'], dtype=str)
     df['pos_score'] = scores[:, 0]
     df['neu_score'] = scores[:, 1]
     df['neg_score'] = scores[:, 2]
-    df['sentiment'] = sentiments[scores.argmax(axis=1)]
     return df
-
-
-def to_keywords(articles):
-    stopwords = [
-        '&#039;', '&quot;', '<span>', '</span>', '<span id="divTitle">', '<b>',
-        '</font>', '</b>', '포토', '없는', '것인가', '[포토]', '속보', '[속보]', '첫',
-        '등', '중', '수', '외', '전', '내', '것', '만에', '더', '논란', '·', '발표',
-        '안', '후', '출시', '위한', 'ET투자뉴스', '\u200b']
-
-    parsed = []
-    for title in articles:
-        for w in [',', "','", '[', ']', '(', ')']:
-            title = title.replace(w, ' ')
-        for w in ["'", '"', "'", '‘', '’']:
-            title = title.replace(w, '')
-        parsed.append([word for word in title.split() if word not in stopwords])
-    return parsed
-
-
-def find_popular_keywords(num_words=20, num_days=3):
-    entries = mysql.select_articles(
-        field=['title', 'description', 'date'],
-        date_from=datetime.now() - timedelta(num_days))
-    words_dict = defaultdict(lambda: [])
-    for e in entries:
-        words_dict[e[2].date()].append(e[0])
-
-    data = []
-    for date in sorted(words_dict.keys()):
-        keywords = to_keywords(words_dict[date])
-        keywords = [w for words in keywords for w in words]
-        keywords = Counter(keywords).most_common(num_words)
-        for word, count in keywords:
-            data.append((date, word, count))
-    return pd.DataFrame(data, columns=['date', 'word', 'count'])
