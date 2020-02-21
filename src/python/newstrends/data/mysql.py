@@ -39,7 +39,7 @@ def create_news_table():
 
 
 def select_all_titles(preprocess):
-    sql = 'select title from news'
+    sql = 'select title from news where publisher != \'뉴시스\''
     entries = get_engine().execute(sql)
     titles = [e[0] for e in entries]
     if preprocess:
@@ -55,17 +55,14 @@ def select_articles(field=None, publishers=None, date_from=None):
     else:
         field_str = field
 
-    sql = f'select {field_str} from news'
-
-    if publishers is not None or date_from is not None:
-        sql += ' where'
+    sql = f'select {field_str} from news where publisher != \'뉴시스\''
 
     if publishers is not None:
-        sql += ' publisher in ({})'.format(
+        sql += ' and publisher in ({})'.format(
             ', '.join(f'\'{e}\'' for e in publishers))
 
     if date_from is not None:
-        sql += ' date >= "{}"'.format(date_from.strftime('%Y-%m-%d'))
+        sql += ' and date >= "{}"'.format(date_from.strftime('%Y-%m-%d'))
 
     entries = get_engine().execute(sql)
     if isinstance(field, str):
