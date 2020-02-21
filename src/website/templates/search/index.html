@@ -10,7 +10,7 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
 
-    <title>Hello, world!</title>
+    <title>전국뉴스자랑</title>
 
     <link href="https://fonts.googleapis.com/css?family=Nanum+Gothic&display=swap" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="{% static 'css/index.css' %}" />
@@ -18,7 +18,7 @@
 </head>
 <body>
 <div class="container">
-    <h1 id="title">News Title</h1>
+    <h1 id="title">전국뉴스자랑</h1>
     <form method="post" action="/result/">
         {% csrf_token %}
         <input type="text" name="search_value" placeholder="Search..." value="{{ search_value }}">
