@@ -9,3 +9,7 @@ class NewsArticle(models.Model):
     author = models.CharField(max_length=255, blank=True, null=True)
     link = models.CharField(max_length=255, blank=True, null=True, unique=True)
     description = models.TextField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'news'
