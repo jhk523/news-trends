@@ -10,7 +10,7 @@ class SoftmaxClassifier(nn.Module):
     def __init__(self, vocab_size, num_classes, embedding_dim=8):
         super().__init__()
         self.embedding = nn.Embedding(vocab_size, embedding_dim)
-        self.linear = nn.Linear(embedding_dim, num_classes)
+        self.linear = nn.Linear(embedding_dim, num_classes, bias=False)
 
     # noinspection PyShadowingBuiltins
     def __call__(self, *input, **kwargs) -> typing.Any:
@@ -55,7 +55,8 @@ class RNNClassifier(nn.Module):
         self.dense = nn.Sequential(
             nn.Linear(hidden_size, embedding_dim),
             nn.ELU(),
-            nn.Linear(embedding_dim, num_classes))
+            nn.Dropout(p=dropout),
+            nn.Linear(embedding_dim, num_classes, bias=False))
 
     # noinspection PyShadowingBuiltins
     def __call__(self, *input, **kwargs) -> typing.Any:

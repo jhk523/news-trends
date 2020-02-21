@@ -51,6 +51,7 @@ def read_labels_as_tensor(path, label_map):
 
 
 def print_predictions(model, loader, titles):
+    model.eval()
     count = 0
     for x, y in loader:
         y_pred = torch.softmax(model(x), dim=1)
@@ -65,10 +66,13 @@ def print_predictions(model, loader, titles):
 
 
 def start_interactive_session(model, spm_model, unique_pieces):
+    model.eval()
     device = utils.to_device()
     while True:
         print('Sentence:', end=' ')
         sentence = input()
+        if len(sentence.strip()) == 0:
+            continue
         pieces = spm_model.encode_as_pieces(sentence)
         matrix = utils.to_integer_matrix([pieces], unique_pieces).to(device)
         # matrix = utils.to_multi_hot_matrix([pieces], unique_pieces).to(device)
@@ -88,8 +92,8 @@ def main():
 
     pieces = read_pieces(f'{out_path}/train/pieces.tsv')
     vocabulary = list(set(p for pp in pieces for p in pp))
-    # features = utils.to_multi_hot_matrix(pieces, vocabulary)
     features = utils.to_integer_matrix(pieces, vocabulary)
+    # features = utils.to_multi_hot_matrix(pieces, vocabulary)
     labels = read_labels_as_tensor(f'{out_path}/train/labels.tsv', label_map)
 
     vocab_size = len(vocabulary)
@@ -98,8 +102,6 @@ def main():
     batch_size = 256
 
     device = utils.to_device()
-    # cls_model = models.SoftmaxClassifier(
-    #     vocab_size, num_classes, embedding_dim).to(device)
     cls_model = models.RNNClassifier(
         vocab_size, num_classes, embedding_dim).to(device)
     cls_path = f'{out_path}/pub/model.pth'
@@ -109,7 +111,7 @@ def main():
         loader = DataLoader(
             TensorDataset(features, labels), batch_size, shuffle=True)
         utils.train_model(
-            cls_model, loader, lr=1e-4, num_epochs=1500, print_every=100)
+            cls_model, loader, lr=1e-4, num_epochs=1500, print_every=100, patience=100)
         torch.save(cls_model.state_dict(), cls_path)
     else:
         cls_model.load_state_dict(torch.load(cls_path))
