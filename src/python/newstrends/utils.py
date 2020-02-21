@@ -164,9 +164,11 @@ def search_keyword_sentiment(keyword):
     if df.empty:
         return None
     scores = azure.compute_scores(df['title'])
+    sentiments = np.array(['긍정적', '중립적', '부정적'], dtype=str)
     df['pos_score'] = scores[:, 0]
     df['neu_score'] = scores[:, 1]
     df['neg_score'] = scores[:, 2]
+    df['sentiment'] = sentiments[scores.argmax(axis=1)]
     return df
 
 
