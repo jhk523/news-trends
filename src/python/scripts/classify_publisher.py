@@ -16,7 +16,7 @@ def save_strings(path, name, data):
 
 def save_as_pieces(model, path):
     entries = mysql.select_articles(
-        field=['title', 'publisher'], publishers=['조선일보', '한겨례'])
+        field=['title', 'publisher'], publishers=['조선일보', '경향신문', '한겨례'])
     titles = [e[0] for e in entries]
     titles = utils.preprocess(titles)
     publishers = [e[1] for e in entries]
@@ -42,15 +42,11 @@ def read_pieces(path):
     return pieces
 
 
-def read_labels_as_tensor(path):
+def read_labels_as_tensor(path, label_map):
     labels = []
-    label_map = {}
     with open(path) as f:
         for line in f:
-            label = line.strip()
-            if label not in label_map:
-                label_map[label] = len(label_map)
-            labels.append(label_map[label])
+            labels.append(label_map[line.strip()])
     return torch.tensor(labels)
 
 
@@ -60,7 +56,7 @@ def print_predictions(model, loader, titles):
         y_pred = torch.softmax(model(x), dim=1)
         for i in range(x.size(0)):
             pred_str = ', '.join(f'{e * 100:.1f}' for e in y_pred[i])
-            label = '조선일보' if y[i] == 0 else '한겨레'
+            label = '조선일보' if y[i] == 0 else '한겨레경향'
             print(f'Title: {titles[count]}')
             print(f'Prediction: ({pred_str})')
             print(f'True label: ({label})')
@@ -88,18 +84,22 @@ def main():
     spm_model = utils.load_spm(path=f'{out_path}/spm/spm.model')
     save_as_pieces(spm_model, path=f'{out_path}/train')
 
+    label_map = dict(조선일보=0, 경향신문=1, 한겨례=1)
+
     pieces = read_pieces(f'{out_path}/train/pieces.tsv')
     vocabulary = list(set(p for pp in pieces for p in pp))
     # features = utils.to_multi_hot_matrix(pieces, vocabulary)
     features = utils.to_integer_matrix(pieces, vocabulary)
-    labels = read_labels_as_tensor(f'{out_path}/train/labels.tsv')
+    labels = read_labels_as_tensor(f'{out_path}/train/labels.tsv', label_map)
 
     vocab_size = len(vocabulary)
     num_classes = 2
-    embedding_dim = 6
+    embedding_dim = 8
     batch_size = 256
 
     device = utils.to_device()
+    # cls_model = models.SoftmaxClassifier(
+    #     vocab_size, num_classes, embedding_dim).to(device)
     cls_model = models.RNNClassifier(
         vocab_size, num_classes, embedding_dim).to(device)
     cls_path = f'{out_path}/pub/model.pth'
@@ -109,7 +109,7 @@ def main():
         loader = DataLoader(
             TensorDataset(features, labels), batch_size, shuffle=True)
         utils.train_model(
-            cls_model, loader, lr=1e-4, num_epochs=1000, print_every=100)
+            cls_model, loader, lr=1e-4, num_epochs=1500, print_every=100)
         torch.save(cls_model.state_dict(), cls_path)
     else:
         cls_model.load_state_dict(torch.load(cls_path))
