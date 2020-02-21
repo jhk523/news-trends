@@ -153,7 +153,7 @@ def search_keywords_as_dataframe(*keywords, num_days='all', ignore_time=True):
     df = pd.DataFrame(searched, columns=field)
 
     if ignore_time:
-        df['date'] = df['date'].apply(lambda x: x.replace(hour=0, minute=0, second=0))
+        df['date'] = df['date'].apply(lambda x: x.date())
 
     return df
 
@@ -189,7 +189,7 @@ def to_keywords(articles):
     return parsed
 
 
-def find_popular_keywords(num_words=20, num_days=1):
+def find_popular_keywords(num_words=20, num_days=3):
     entries = mysql.select_articles(
         field=['title', 'description', 'date'],
         date_from=datetime.now() - timedelta(num_days))
@@ -205,3 +205,7 @@ def find_popular_keywords(num_words=20, num_days=1):
         for word, count in keywords:
             data.append((date, word, count))
     return pd.DataFrame(data, columns=['date', 'word', 'count'])
+
+
+def compute_sentence_polarity(sentence):
+    return dict(보수=0.6, 진보=0.4)
