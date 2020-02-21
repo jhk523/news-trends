@@ -6,13 +6,13 @@ import multiprocessing
 import os
 
 import numpy as np
-from azure.ai.textanalytics import TextAnalyticsClient, TextAnalyticsApiKeyCredential
 
 _ROOT_DIR = os.path.abspath(__file__ + '/../../../../')
 _CLIENT = None
 
 
 def load_client():
+    from azure.ai.textanalytics import TextAnalyticsClient, TextAnalyticsApiKeyCredential
     global _CLIENT
     if _CLIENT is None:
         path = os.path.join(_ROOT_DIR, 'data/azure_info.json')
