@@ -15,7 +15,7 @@ body {
 }
 
 .container {
-  position: absolute;
+  /*position: absolute;*/
   margin: auto;
   top: 0;
   left: 0;
@@ -27,6 +27,7 @@ body {
 
 /* title */
 #title{
+  margin-top: 50px;
   text-align: center;
   font-size: 50px;
 }
@@ -37,7 +38,7 @@ body {
   position: absolute;
   margin-left: auto;
   margin-right: auto;
-  margin-top: 9%;
+  margin-top: 190px;
 
   top: 0;
   right: 0;
@@ -87,7 +88,7 @@ body {
   position: absolute;
   margin-left: auto;
   margin-right: auto;
-  margin-top: 10%;
+  margin-top: 205px;
   top: 0;
   right: 0;
   bottom: 0;
