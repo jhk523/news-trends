@@ -8,6 +8,7 @@ import sentencepiece as spm
 import torch
 from torch import nn, optim
 
+from newstrends import azure
 from newstrends.data import mysql
 
 
@@ -130,7 +131,7 @@ def to_device():
         return torch.device('cpu')
 
 
-def search_keyword(keyword, num_days='all', ignore_time=True):
+def search_keyword_as_dataframe(keyword, num_days='all', ignore_time=True):
     field = ['title', 'date', 'publisher']
     date_from = None
     if isinstance(num_days, int):
@@ -147,4 +148,13 @@ def search_keyword(keyword, num_days='all', ignore_time=True):
 
     if ignore_time:
         df['date'] = df['date'].apply(lambda x: x.replace(hour=0, minute=0, second=0))
+    return df
+
+
+def search_keyword_sentiment(keyword):
+    df = search_keyword_as_dataframe(keyword, num_days=7)
+    scores = azure.compute_scores(df['title'])
+    df['pos_score'] = scores[:, 0]
+    df['neu_score'] = scores[:, 1]
+    df['neg_score'] = scores[:, 2]
     return df
