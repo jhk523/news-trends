@@ -154,7 +154,8 @@ body {
   /*border-style: solid;*/
   /*border-color: black;*/
   /*border-width: 1px;*/
-  color: #4d4d4d;
+  /*color: #4d4d4d;*/
+  color: white;
 }
 
 .dates{
@@ -166,10 +167,12 @@ body {
   padding-bottom: 10px;
 }
 #date-1{
-  background-color: #ACE7D1;
+  background-color: #838383;
+  /*background-color: #ACE7D1;*/
 }
 #date-2{
-  background-color: #FFAEA9;
+  background-color: #838383;
+  /*background-color: #FFAEA9;*/
 }
 
 .rank{
