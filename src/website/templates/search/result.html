@@ -53,21 +53,21 @@
                 <div class="w-100 publisher-name">{{ publisher }}</div>
                 <div class="row titles">
                     <div class="col-2">Date</div>
-                    <div class="col-1">Sentiment</div>
+                    <div class="col-2">Sentiment</div>
                     <div class="col-1">Pos.</div>
                     <div class="col-1">Neu.</div>
                     <div class="col-1">Neg.</div>
-                    <div class="col-6">Title</div>
+                    <div class="col-5">Title</div>
                 </div>
                 <div class="row articles">
                     {% for news_article in df %}
                         {% if news_article.publisher == publisher %}
                             <div class="col-2 article-title">{{ news_article.date | date:'Y-m-d' }}</div>
-                            <div class="col-1 article-title">{{ news_article.sentiment }}</div>
+                            <div class="col-2 article-title">{{ news_article.sentiment }}</div>
                             <div class="col-1 article-title">{{ news_article.pos_score }}</div>
                             <div class="col-1 article-title">{{ news_article.neu_score }}</div>
                             <div class="col-1 article-title">{{ news_article.neg_score }}</div>
-                            <div class="col-6 article-title">{{ news_article.title }}</div>
+                            <div class="col-5 article-title" id="article-title-id">{{ news_article.title }}</div>
                         {% endif %}
                     {% endfor %}
                     <div class="article-last"></div>
