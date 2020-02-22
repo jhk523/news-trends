@@ -1,6 +1,3 @@
-"""
-pip install azure-ai-textanalytics 로 패키지 설치 후 사용
-"""
 import json
 import os
 
@@ -11,6 +8,7 @@ _CLIENT = None
 
 
 def load_client():
+    # pip install azure-ai-textanalytics
     from azure.ai.textanalytics import TextAnalyticsClient, TextAnalyticsApiKeyCredential
     global _CLIENT
     if _CLIENT is None:

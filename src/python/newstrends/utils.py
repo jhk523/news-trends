@@ -209,3 +209,17 @@ def find_popular_keywords(num_words=20, num_days=3):
 
 def compute_sentence_polarity(sentence):
     return dict(보수=0.6, 진보=0.4)
+
+
+def train_sentencepiece(title_path, model_path,
+                        vocab_size=2048,
+                        model_type='unigram',
+                        character_coverage=0.9995):
+    assert model_type in {'unigram', 'bpe', 'char', 'word'};
+    model_prefix = model_path[:model_path.rfind('.')]
+    spm.SentencePieceTrainer.Train(
+        f'--input={title_path} '
+        f'--model_prefix={model_prefix} '
+        f'--vocab_size={vocab_size} '
+        f'--model_type={model_type} '
+        f'--character_coverage={character_coverage}')
