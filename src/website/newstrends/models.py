@@ -44,12 +44,15 @@ class RNNClassifier(nn.Module):
                  cell_type='lstm', num_layers=1, dropout=0):
         super().__init__()
         hidden_size = 2 * embedding_dim
+        rnn_dropout = 0 if num_layers == 1 else dropout
 
         assert cell_type in {'gru', 'lstm'}
         if cell_type == 'lstm':
-            self.rnn = nn.LSTM(embedding_dim, hidden_size, num_layers, dropout=dropout)
+            self.rnn = nn.LSTM(
+                embedding_dim, hidden_size, num_layers, dropout=rnn_dropout)
         else:
-            self.rnn = nn.GRU(embedding_dim, hidden_size, num_layers, dropout=dropout)
+            self.rnn = nn.GRU(
+                embedding_dim, hidden_size, num_layers, dropout=rnn_dropout)
 
         self.embedding = nn.Embedding(vocab_size, embedding_dim)
         self.dense = nn.Sequential(

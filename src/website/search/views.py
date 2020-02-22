@@ -67,6 +67,11 @@ class Result(FormView):
         else:
             from newstrends.utils import search_keyword_sentiment
             df = search_keyword_sentiment(SEARCH_WORD)
+            df.sort_values(by='date', ascending=False, inplace=True)
+            df['pos_score'] = df['pos_score'].apply(lambda x: '{:.2f}'.format(x))
+            df['neg_score'] = df['neg_score'].apply(lambda x: '{:.2f}'.format(x))
+            df['neu_score'] = df['neu_score'].apply(lambda x: '{:.2f}'.format(x))
+
             df_list = df.to_dict('records')
             publishers_list = df.publisher.unique()
 
