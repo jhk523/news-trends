@@ -155,8 +155,14 @@ def to_device():
         return torch.device('cpu')
 
 
-def search_keywords_as_dataframe(*keywords, num_days='all', ignore_time=True):
+def search_keywords_as_dataframe(*keywords, num_days='all', ignore_time=True,
+                                 with_id=False, with_scores=False):
     field = ['title', 'date', 'publisher']
+    if with_id:
+        field.append('id')
+    if with_scores:
+        field.extend(['pos_score', 'neu_score', 'neg_score'])
+
     date_from = None
     if isinstance(num_days, int):
         date_from = datetime.now() - timedelta(days=num_days)
@@ -181,16 +187,27 @@ def search_keywords_as_dataframe(*keywords, num_days='all', ignore_time=True):
     return df
 
 
-def search_keyword_sentiment(keyword):
+def search_keyword_sentiment(keyword, num_days=7):
     keywords = [keyword, keyword.replace(' ', '')]
-    df = search_keywords_as_dataframe(*keywords, num_days=7)
+    df = search_keywords_as_dataframe(
+        *keywords, num_days=num_days, with_id=True, with_scores=True)
     if df.empty:
         return None
-    scores = azure.compute_scores(df['title'])
+    search_index = df['pos_score'].isnull()
+    num_queries = df.loc[search_index, :].shape[0]
+
+    if num_queries > 0:
+        computed_scores = azure.compute_scores(df.loc[search_index, 'title'])
+        df.loc[search_index, 'pos_score'] = computed_scores[:, 0]
+        df.loc[search_index, 'neu_score'] = computed_scores[:, 1]
+        df.loc[search_index, 'neg_score'] = computed_scores[:, 2]
+
+        for (_, row), score in zip(df.loc[search_index, :].iterrows(), computed_scores):
+            mysql.update_scores(row['id'], score)
+        print(f'{num_queries} rows have been updated.')
+
+    scores = df[['pos_score', 'neu_score', 'neg_score']].values
     sentiments = np.array(['긍정적', '중립적', '부정적'], dtype=str)
-    df['pos_score'] = scores[:, 0]
-    df['neu_score'] = scores[:, 1]
-    df['neg_score'] = scores[:, 2]
     df['sentiment'] = sentiments[scores.argmax(axis=1)]
     return df
 
@@ -212,7 +229,7 @@ def to_keywords(articles):
     return parsed
 
 
-def find_popular_keywords(num_words=20, num_days=3):
+def find_popular_keywords(num_words=20, num_days=1):
     entries = mysql.select_articles(
         field=['title', 'description', 'date'],
         date_from=datetime.now() - timedelta(num_days))
