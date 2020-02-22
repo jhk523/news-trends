@@ -1,8 +1,4 @@
-"""
-pip install azure-ai-textanalytics 로 패키지 설치 후 사용
-"""
 import json
-import multiprocessing
 import os
 
 import numpy as np
@@ -12,6 +8,7 @@ _CLIENT = None
 
 
 def load_client():
+    # pip install azure-ai-textanalytics
     from azure.ai.textanalytics import TextAnalyticsClient, TextAnalyticsApiKeyCredential
     global _CLIENT
     if _CLIENT is None:
@@ -40,5 +37,6 @@ def compute_scores(documents, max_records=1000):
     documents_split = []
     for i in range(0, len(documents), max_records):
         documents_split.append(documents[i:i + max_records])
-    scores_list = multiprocessing.Pool().map(send_query, documents_split)
+    scores_list = [send_query(d) for d in documents_split]
+    # scores_list = multiprocessing.Pool().map(send_query, documents_split)
     return np.array([e for s in scores_list for e in s])
