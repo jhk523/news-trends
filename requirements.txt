@@ -17,3 +17,4 @@ django
 django-scss
 azure-ai-textanalytics
 matplotlib
+mysqlclient

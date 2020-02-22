@@ -25,17 +25,17 @@
 본 프로젝트는 딥 러닝(deep learning) 및 자연어 처리(natural language processing) 분야의
 기술을 기반으로 하고 있습니다. 핵심적으로 사용하는 인공지능 기술 및 패키지는 다음과 같습니다. 
 
-[**Google Sentencepiece**](https://github.com/google/sentencepiece): Google의 최신
+- [**Google Sentencepiece**](https://github.com/google/sentencepiece): Google의 최신
 자연어 처리 모델입니다. 형태소 등 언어에 대한 지식 없이도 문장 내 등장 패턴을 기반으로 주어진 문장을 여러
 개의 토큰으로 쪼갤 수 있습니다. 최근에 다양한 자연어 처리 문제에서 뛰어난 성능을 보인 Google의
 [BERT](https://arxiv.org/abs/1810.04805) 모델도 비슷한 방식의 토큰 모델을 사용하였습니다.
 
-[**Microsoft Azure Text Analytics**](https://azure.microsoft.com/en-us/services/cognitive-services/text-analytics/):
+- [**Microsoft Azure Text Analytics**](https://azure.microsoft.com/en-us/services/cognitive-services/text-analytics/):
 Microsoft Azure에서 지원하는 자연어 분석 시스템입니다. 임의의 문장을 입력하면 해당 문장의 논조를
 분석하여 감정 분석을 진행합니다. 많은 양의 텍스트 데이터에 대해 훈련된 인공지능 모델을 사용하기 때문에
 특정 분야에 대한 전문 지식 없이도 좋은 성능을 보인다는 장점이 있습니다.
 
-[**Long Short-Term Memory Unit (LSTM)**](https://en.wikipedia.org/wiki/Long_short-term_memory):
+- [**Long Short-Term Memory Unit (LSTM)**](https://en.wikipedia.org/wiki/Long_short-term_memory):
 LSTM 모델은 시계열 데이터에 최적화된 딥 러닝 모델입니다. 일반적인 전방 전달 신경망(feedforward
 neural network)이 모든 입력 피처를 동일한 수준으로 취급하는 것에 비해, LSTM 모델은 내부적인 상태
 벡터를 유지하며 시계열 내의 개별 입력이 주어질 때마다 순차적으로 정보를 누적합니다.
@@ -91,13 +91,23 @@ LSTM 모델을 학습합니다. LSTM 모델은 시계열 데이터를 모델링�
 
 ## 코드 실행 방법
 
-본 코드 저장소는 크게 두 가지 모듈로 구성되어 있습니다.
-- `src/python`: 데이터 스크래핑, 전처리, 기계 학습 모델 개발 등 전반적인 코드를 저장하고 있습니다.
-- `src/website`: 웹사이트 프로토타입에 대한 코드를 저장하고 있습니다.
+전체 코드는 Python 3.6 언어로 작성되어 있으며 프로토타입 웹페이지는 Django 프레임웨크를 기반으로
+구현되어 있습니다. 프로토타입을 실행하기 위해 다음과 같은 명령어를 실행해야 합니다. 그런 다음, Chrome
+등의 인터넷 브라우저를 실행하여 `127.0.0.1:8000` 주소에 접속하면 현재 핫 키워드를 볼 수 있을 뿐
+아니라 원하는 키워드 및 문장을 검색하여 언론사 편향성을 분석할 수 있습니다. 
 
-Python 3.6 언어를 권장하나 Python 3.7에서도 정상적으로 구동될 수 있습니다. 소스 코드 실행을 위해
-필요한 패키지는 `requirements.txt` 파일에 정리되어 있습니다. MySQL 접속 정보 등 일부 데이터는 본
-저장소에 포함되어 있지 않기 때문에 이러한 데이터를 `data` 폴더에 따로 저장해야 합니다. 
+```
+pip install -r requirements.txt
+cd src/webpage
+python manage.py runserver
+```
+
+하지만, 본 프로토타입이 현재 저희 개인 서버의 MySQL 데이터베이스 및 Microsoft Azure API를 기반으로
+하고 있으므로 공개된 코드 저장소에 이러한 개인 정보를 공개하는 것이 불가능합니다. 따라서, 프로토타입
+코드를 실행하기 전에 다음 세 개의 파일을 `data` 폴더에 먼저 위치시켜야 합니다.
+- `azure_info.json`: 저희 팀의 MS Azure API에 대한 정보입니다.
+- `db_info.json`: 전체 뉴스 데이터를 저장하고 있는 저희 팀의 MySQL DB 정보입니다.
+- `web_secret.json`: Django 홈페이지를 구동하기 위한 key 정보입니다.  
  
 ## 팀 멤버
 
