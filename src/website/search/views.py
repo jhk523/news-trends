@@ -75,6 +75,7 @@ class Result(FormView):
             df_list = df.to_dict('records')
             publishers_list = df.publisher.unique()
 
+            context['keyword'] = SEARCH_WORD
             context['type'] = 'sentiment'
             context['df'] = df_list
             context['publishers'] = publishers_list
