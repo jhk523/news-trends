@@ -187,10 +187,17 @@ def search_keywords_as_dataframe(*keywords, num_days='all', ignore_time=True,
     return df
 
 
-def search_keyword_sentiment(keyword, num_days=7):
+def search_keyword_sentiment(keyword, num_days=7, max_articles=10):
     keywords = [keyword, keyword.replace(' ', '')]
     df = search_keywords_as_dataframe(
         *keywords, num_days=num_days, with_id=True, with_scores=True)
+
+    df = df.sort_values(by='date', ascending=False)
+    df_list = []
+    for pub, df_ in df.groupby(by='publisher'):
+        df_list.append(df_.iloc[:max_articles, :])
+    df = pd.concat(df_list, axis=0)
+
     if df.empty:
         return None
     search_index = df['pos_score'].isnull()
