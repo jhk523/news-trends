@@ -10,7 +10,7 @@ import sentencepiece as spm
 import torch
 from torch import nn, optim
 
-from newstrends import azure
+from newstrends import azure, models
 from newstrends.data import mysql
 
 
@@ -247,5 +247,32 @@ def find_popular_keywords(num_words=20, num_days=1):
     return pd.DataFrame(data, columns=['date', 'word', 'count'])
 
 
+def load_publisher_model(pub_path, vocabulary):
+    num_classes = 2
+    embedding_dim = 12
+    dropout = 0.5
+    device = to_device()
+
+    model_path = os.path.join(pub_path, 'model.pth')
+    vocab_size = len(vocabulary)
+    model = models.RNNClassifier(
+        vocab_size, num_classes, embedding_dim, dropout=dropout).to(device)
+    model.load_state_dict(torch.load(model_path, map_location=device))
+    return model
+
+
 def compute_sentence_polarity(sentence):
-    return dict(보수=0.6, 진보=0.4)
+    if len(sentence.strip()) == 0:
+        return None
+    spm_path = '../../data/sentencepiece'
+    pub_path = '../../data/publishers'
+
+    device = to_device()
+    vocab = read_vocabulary(spm_path)
+    spm_model = load_sentencepiece(spm_path)
+    cls_model = load_publisher_model(pub_path, vocab)
+
+    pieces = spm_model.encode_as_pieces(sentence)
+    matrix = to_integer_matrix([pieces], vocab).to(device)
+    y_pred = torch.softmax(cls_model(matrix), dim=1)[0]
+    return dict(보수=y_pred[0].item(), 진보=y_pred[1].item())

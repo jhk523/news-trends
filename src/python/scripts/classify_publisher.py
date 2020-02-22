@@ -70,7 +70,7 @@ def print_predictions(model, loader, titles, path):
     f.close()
 
 
-def start_interactive_session(model, spm_model, unique_pieces):
+def start_interactive_session(model, spm_model, vocabulary):
     model.eval()
     device = utils.to_device()
     while True:
@@ -79,7 +79,7 @@ def start_interactive_session(model, spm_model, unique_pieces):
         if len(sentence.strip()) == 0:
             continue
         pieces = spm_model.encode_as_pieces(sentence)
-        matrix = utils.to_integer_matrix([pieces], unique_pieces).to(device)
+        matrix = utils.to_integer_matrix([pieces], vocabulary).to(device)
         y_pred = torch.softmax(model(matrix), dim=1)
 
         pred_str = ', '.join(f'{e * 100:.1f}' for e in y_pred[0])
