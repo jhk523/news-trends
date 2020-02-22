@@ -89,43 +89,44 @@ def start_interactive_session(model, spm_model, unique_pieces):
 
 def main():
     publishers = ['조선일보', '경향신문', '한겨례']
-    out_path = '../../out'
-    spm_model = utils.load_spm(path=f'{out_path}/spm/spm.model')
-
-    if not os.path.exists(f'{out_path}/train'):
-        save_as_pieces(spm_model, path=f'{out_path}/train', publishers=publishers)
-
     label_map = dict(조선일보=0, 경향신문=1, 한겨례=1)
-    pieces = read_pieces(f'{out_path}/train/pieces.tsv')
-    vocabulary = list(set(p for pp in pieces for p in pp))
-    features = utils.to_integer_matrix(pieces, vocabulary)
-    labels = read_labels_as_tensor(f'{out_path}/train/labels.tsv', label_map)
-
-    vocab_size = len(vocabulary)
+    spm_path = '../../data/sentencepiece'
+    pub_path = '../../data/publishers'
     num_classes = 2
     embedding_dim = 10
     batch_size = 256
-    loader = DataLoader(
-        TensorDataset(features, labels), batch_size, shuffle=True)
+
+    spm_model = utils.load_sentencepiece(spm_path)
+    spm_vocab = utils.read_vocabulary(spm_path)
+    vocab_size = len(spm_vocab)
 
     device = utils.to_device()
-    cls_model = models.RNNClassifier(
-        vocab_size, num_classes, embedding_dim).to(device)
-    cls_path = f'{out_path}/pub/model.pth'
+    cls_model = models.RNNClassifier(vocab_size, num_classes, embedding_dim).to(device)
+    cls_path = os.path.join(pub_path, 'model.pth')
 
-    if not os.path.exists(cls_path):
+    if not os.path.exists(pub_path):
+        train_path = os.path.join(pub_path, 'train')
+        save_as_pieces(spm_model, train_path, publishers)
+
+        pieces = read_pieces(os.path.join(train_path, 'pieces.tsv'))
+        features = utils.to_integer_matrix(pieces, spm_vocab)
+        labels = read_labels_as_tensor(
+            os.path.join(train_path, 'labels.tsv'), label_map)
+        loader = DataLoader(
+            TensorDataset(features, labels), batch_size, shuffle=True)
+
         os.makedirs(os.path.dirname(cls_path), exist_ok=True)
         utils.train_model(
             cls_model, loader, lr=1e-4, num_epochs=1500, print_every=100, patience=100)
         torch.save(cls_model.state_dict(), cls_path)
 
-        title_path = f'{out_path}/train/titles.tsv'
-        titles = [e.strip() for e in open(title_path).readlines()]
-        print_predictions(cls_model, loader, titles, f'{out_path}/train/predictions.txt')
+        titles = open(os.path.join(train_path, 'titles.tsv')).readlines()
+        titles = [e.strip() for e in titles]
+        print_predictions(cls_model, loader, titles, f'{pub_path}/train/predictions.txt')
     else:
-        cls_model.load_state_dict(torch.load(cls_path))
+        cls_model.load_state_dict(torch.load(cls_path, map_location=device))
 
-    start_interactive_session(cls_model, spm_model, vocabulary)
+    start_interactive_session(cls_model, spm_model, spm_vocab)
 
 
 if __name__ == '__main__':

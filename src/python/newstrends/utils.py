@@ -1,4 +1,5 @@
 import io
+import os
 import re
 from collections import defaultdict, Counter
 from datetime import datetime, timedelta
@@ -30,16 +31,38 @@ def preprocess(articles):
     return new_articles
 
 
-def load_spm(path):
+def train_sentencepiece(title_path, model_path,
+                        vocab_size=2048,
+                        model_type='unigram',
+                        character_coverage=0.9995):
+    assert model_type in {'unigram', 'bpe', 'char', 'word'}
+    model_prefix = model_path[:model_path.rfind('.')]
+    spm.SentencePieceTrainer.Train(
+        f'--input={title_path} '
+        f'--model_prefix={model_prefix} '
+        f'--vocab_size={vocab_size} '
+        f'--model_type={model_type} '
+        f'--character_coverage={character_coverage}')
+
+
+def load_sentencepiece(path):
+    model_path = os.path.join(path, 'spm.model')
+    if not os.path.exists(path):
+        title_path = os.path.join(path, 'titles.txt')
+        titles = mysql.select_all_titles(preprocess=True)
+        titles = np.array(titles, dtype=str)
+        os.makedirs(os.path.dirname(title_path), exist_ok=True)
+        np.savetxt(title_path, titles, fmt='%s')
+        train_sentencepiece(title_path, model_path)
     model = spm.SentencePieceProcessor()
-    model.Load(path)
+    model.Load(model_path)
     return model
 
 
 def read_vocabulary(path):
     count = 3
     vocabulary = []
-    with open(path) as f:
+    with open(os.path.join(path, 'spm.vocab')) as f:
         for line in f:
             if count > 0:
                 count -= 1
@@ -209,17 +232,3 @@ def find_popular_keywords(num_words=20, num_days=3):
 
 def compute_sentence_polarity(sentence):
     return dict(보수=0.6, 진보=0.4)
-
-
-def train_sentencepiece(title_path, model_path,
-                        vocab_size=2048,
-                        model_type='unigram',
-                        character_coverage=0.9995):
-    assert model_type in {'unigram', 'bpe', 'char', 'word'};
-    model_prefix = model_path[:model_path.rfind('.')]
-    spm.SentencePieceTrainer.Train(
-        f'--input={title_path} '
-        f'--model_prefix={model_prefix} '
-        f'--vocab_size={vocab_size} '
-        f'--model_type={model_type} '
-        f'--character_coverage={character_coverage}')

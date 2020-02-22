@@ -63,8 +63,8 @@ def test_for_article_titles(cls_model, spm_model, vocabulary):
 def main():
     out_path = '../../out'
     spm_path = os.path.join(out_path, 'spm')
-    spm_model = utils.load_spm(os.path.join(spm_path, 'spm.model'))
-    vocab = utils.read_vocabulary(os.path.join(spm_path, 'spm.vocab'))
+    spm_model = utils.load_sentencepiece(spm_path)
+    vocab = utils.read_vocabulary(spm_path)
     vocab_size = len(vocab)
 
     cls_path = os.path.join(out_path, 'sent/model.pth')
