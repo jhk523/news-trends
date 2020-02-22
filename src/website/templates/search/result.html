@@ -34,14 +34,14 @@
         <table class="table table-bordered polarity-table">
             <thead>
                 <tr>
-                    <th scope="col">진보</th>
-                    <th scope="col">보수</th>
+                    <th scope="col">경향 · 한겨레</th>
+                    <th scope="col">조선일보</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td>{{left}}</td>
-                    <td>{{right}}</td>
+                    <td>{{left | floatformat:2}}</td>
+                    <td>{{right | floatformat:2}}</td>
                 </tr>
             </tbody>
         </table>
