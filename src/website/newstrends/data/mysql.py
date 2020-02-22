@@ -70,6 +70,15 @@ def select_articles(field=None, publishers=None, date_from=None):
     return [e for e in entries]
 
 
+def update_scores(index, scores):
+    sql = 'update news ' \
+          'set pos_score = {},' \
+          '    neu_score = {},' \
+          '    neg_score = {} ' \
+          'where id = {}'.format(scores[0], scores[1], scores[2], index)
+    get_engine().execute(sql)
+
+
 def read_publisher_links(publisher):
     query = "select link from news where publisher='{}'"
     fetched = get_engine().execute(query.format(publisher)).fetchall()
