@@ -154,7 +154,8 @@ body {
   /*border-style: solid;*/
   /*border-color: black;*/
   /*border-width: 1px;*/
-  color: #4d4d4d;
+  /*color: #4d4d4d;*/
+  color: white;
 }
 
 .dates{
@@ -162,14 +163,16 @@ body {
   margin-bottom: 10px;
   text-align: center;
   font-size: 30px;
-  border-bottom: #818181 solid 1px;
+  /*border-bottom: #ffffff solid 1px;*/
   padding-bottom: 10px;
 }
 #date-1{
-  background-color: #ACE7D1;
+  background-color: #838383;
+  /*background-color: #ACE7D1;*/
 }
 #date-2{
-  background-color: #FFAEA9;
+  background-color: #838383;
+  /*background-color: #FFAEA9;*/
 }
 
 .rank{
@@ -178,6 +181,10 @@ body {
 }
 .rank-names{
   font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: #ffffff solid 1px;
 }
 .rank-values{
   font-size: 17px;
