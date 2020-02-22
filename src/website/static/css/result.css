@@ -60,12 +60,25 @@
     font-size: 20px;
 }
 
+.article-date{
+    padding-left: 80px !important;
+}
+
+.article-contents{
+    margin-left: -15px !important;
+}
+
 .search-keyword{
     text-align: center;
     margin-bottom: 20px;
     font-size: 20px;
 }
 
-#article-title-id{
+.article-title-class{
     text-align: left;
+    margin-left: 15px;
+}
+
+#article-title-id{
+    text-align: center !important;
 }
