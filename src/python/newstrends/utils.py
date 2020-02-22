@@ -33,7 +33,7 @@ def preprocess(articles):
 
 def train_sentencepiece(title_path, model_path,
                         vocab_size=2048,
-                        model_type='unigram',
+                        model_type='bpe',
                         character_coverage=0.9995):
     assert model_type in {'unigram', 'bpe', 'char', 'word'}
     model_prefix = model_path[:model_path.rfind('.')]

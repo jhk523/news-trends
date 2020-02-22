@@ -93,15 +93,17 @@ def main():
     spm_path = '../../data/sentencepiece'
     pub_path = '../../data/publishers'
     num_classes = 2
-    embedding_dim = 10
-    batch_size = 256
+    embedding_dim = 12
+    batch_size = 512
+    dropout = 0.5
 
     spm_model = utils.load_sentencepiece(spm_path)
     spm_vocab = utils.read_vocabulary(spm_path)
     vocab_size = len(spm_vocab)
 
     device = utils.to_device()
-    cls_model = models.RNNClassifier(vocab_size, num_classes, embedding_dim).to(device)
+    cls_model = models.RNNClassifier(
+        vocab_size, num_classes, embedding_dim, dropout=dropout).to(device)
     cls_path = os.path.join(pub_path, 'model.pth')
 
     if not os.path.exists(pub_path):
@@ -122,7 +124,7 @@ def main():
 
         titles = open(os.path.join(train_path, 'titles.tsv')).readlines()
         titles = [e.strip() for e in titles]
-        print_predictions(cls_model, loader, titles, f'{pub_path}/train/predictions.txt')
+        print_predictions(cls_model, loader, titles, f'{pub_path}/predictions.txt')
     else:
         cls_model.load_state_dict(torch.load(cls_path, map_location=device))
 
